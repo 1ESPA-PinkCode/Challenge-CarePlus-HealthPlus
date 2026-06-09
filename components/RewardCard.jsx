@@ -1,18 +1,14 @@
 import { View, Text, StyleSheet, Image } from "react-native";
+import RewardButton from "./RewardButton";
 
 const gema = require("../assets/images/gema.png");
 
-export default function RewardCard({ reward }) {
+export default function RewardCard({ reward, onRedeem }) {
   return (
     <View style={styles.card}>
       <View style={styles.textArea}>
-        <Text style={styles.cardTitle} numberOfLines={2}>
-          {reward.title}
-        </Text>
-
-        <Text style={styles.description} numberOfLines={3}>
-          {reward.description}
-        </Text>
+        <Text style={styles.cardTitle}>{reward.title}</Text>
+        <Text style={styles.description}>{reward.description}</Text>
       </View>
 
       <View style={styles.pointsContainer}>
@@ -20,11 +16,7 @@ export default function RewardCard({ reward }) {
         <Text style={styles.points}>{reward.points}</Text>
       </View>
 
-      <View style={[styles.button, reward.locked && styles.buttonLocked]}>
-        <Text style={styles.buttonText}>
-          {reward.locked ? "Bloqueado" : "Resgatar"}
-        </Text>
-      </View>
+      <RewardButton locked={reward.locked} onPress={onRedeem} />
     </View>
   );
 }
@@ -41,7 +33,6 @@ const styles = StyleSheet.create({
   },
 
   textArea: {
-    width: "100%",
     paddingBottom: 75,
   },
 
@@ -69,42 +60,19 @@ const styles = StyleSheet.create({
   },
 
   gema: {
-    width: 48,
-    height: 48,
+    width: 55,
+    height: 55,
     resizeMode: "contain",
     marginRight: -4,
     marginTop: 4,
   },
 
   points: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "900",
     color: "#8AC94B",
     textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1,
-  },
-
-  button: {
-    position: "absolute",
-    left: 12,
-    right: 12,
-    bottom: 14,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 25,
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-
-  buttonLocked: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#16865F",
-  },
-
-  buttonText: {
-    color: "#16865F",
-    fontSize: 14,
-    fontWeight: "800",
   },
 });

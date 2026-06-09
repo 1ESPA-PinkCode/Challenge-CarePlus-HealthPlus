@@ -1,3 +1,4 @@
+import { useGemas } from "../../contexts/GemsContext";
 import { useState } from "react";
 import {
   View,
@@ -13,7 +14,7 @@ import { colors } from "../../constants/colors";
 import RewardCard from "../../components/RewardCard";
 
 export default function Recompensas() {
-  const userGems = 150;
+  const { gemas, removeGemas } = useGemas();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
@@ -68,7 +69,7 @@ export default function Recompensas() {
 
   const rewardsWithStatus = rewards.map((reward) => ({
     ...reward,
-    locked: userGems < reward.points,
+    locked: gemas < reward.points,
   }));
 
   function openModal(reward) {
@@ -87,6 +88,7 @@ export default function Recompensas() {
         }
 
         setGeneratedCoupon(coupon);
+        removeGemas(reward.points);
       } catch (error) {
         setIsErrorModal(true);
       }

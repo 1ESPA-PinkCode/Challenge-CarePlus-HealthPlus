@@ -8,15 +8,21 @@ export default function RewardCard({ reward, onRedeem }) {
     <View style={styles.card}>
       <View style={styles.textArea}>
         <Text style={styles.cardTitle}>{reward.title}</Text>
+
         <Text style={styles.description}>{reward.description}</Text>
       </View>
 
       <View style={styles.pointsContainer}>
         <Image source={gema} style={styles.gema} />
+
         <Text style={styles.points}>{reward.points}</Text>
       </View>
 
-      <RewardButton locked={reward.locked} onPress={onRedeem} />
+      <RewardButton
+        locked={reward.locked}
+        redeemed={reward.redeemed}
+        onPress={onRedeem}
+      />
     </View>
   );
 }
@@ -33,6 +39,7 @@ const styles = StyleSheet.create({
   },
 
   textArea: {
+    width: "100%",
     paddingBottom: 75,
   },
 

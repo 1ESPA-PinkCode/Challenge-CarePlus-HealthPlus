@@ -1,4 +1,3 @@
-import { useGemas } from "../../contexts/GemsContext";
 import { useState } from "react";
 import {
   View,
@@ -12,6 +11,7 @@ import * as Clipboard from "expo-clipboard";
 
 import { colors } from "../../constants/colors";
 import RewardCard from "../../components/RewardCard";
+import { useGemas } from "../../contexts/GemsContext";
 
 export default function Recompensas() {
   const { gemas, removeGemas } = useGemas();
@@ -22,6 +22,7 @@ export default function Recompensas() {
   const [isLockedModal, setIsLockedModal] = useState(false);
   const [isErrorModal, setIsErrorModal] = useState(false);
   const [generatedCoupon, setGeneratedCoupon] = useState("");
+  const [redeemedRewards, setRedeemedRewards] = useState({});
 
   const rewards = [
     {
@@ -70,14 +71,23 @@ export default function Recompensas() {
   const rewardsWithStatus = rewards.map((reward) => ({
     ...reward,
     locked: gemas < reward.points,
+    redeemed: !!redeemedRewards[reward.title],
   }));
 
   function openModal(reward) {
     setSelectedReward(reward);
     setCopied(false);
-    setIsLockedModal(reward.locked);
     setIsErrorModal(false);
     setGeneratedCoupon("");
+
+    if (redeemedRewards[reward.title]) {
+      setGeneratedCoupon(redeemedRewards[reward.title]);
+      setIsLockedModal(false);
+      setModalVisible(true);
+      return;
+    }
+
+    setIsLockedModal(reward.locked);
 
     if (!reward.locked) {
       try {
@@ -89,6 +99,11 @@ export default function Recompensas() {
 
         setGeneratedCoupon(coupon);
         removeGemas(reward.points);
+
+        setRedeemedRewards((currentRewards) => ({
+          ...currentRewards,
+          [reward.title]: coupon,
+        }));
       } catch (error) {
         setIsErrorModal(true);
       }
@@ -133,6 +148,8 @@ export default function Recompensas() {
                 ? "Ops! Não conseguimos finalizar seu resgate"
                 : isLockedModal
                 ? "Recompensa bloqueada"
+                : redeemedRewards[selectedReward?.title]
+                ? "Cupom já resgatado"
                 : "Parabéns pela conquista!"}
             </Text>
 
@@ -141,11 +158,19 @@ export default function Recompensas() {
                 ? "Pode ter sido sua internet ou um problema temporário. Tente novamente em alguns instantes."
                 : isLockedModal
                 ? `Você ainda não possui gemas suficientes para resgatar "${selectedReward?.title}". Complete mais missões para desbloquear essa recompensa.`
+                : redeemedRewards[selectedReward?.title]
+                ? "Esse cupom já foi resgatado anteriormente. Você pode copiar e usar o mesmo código abaixo."
                 : "Você está cuidando de você e isso merece ser celebrado. Sua recompensa já está disponível para resgate!"}
             </Text>
 
             <Text style={styles.heart}>
-              {isErrorModal ? "⚠️" : isLockedModal ? "🔒" : "💚"}
+              {isErrorModal
+                ? "⚠️"
+                : isLockedModal
+                ? "🔒"
+                : redeemedRewards[selectedReward?.title]
+                ? "🎟️"
+                : "💚"}
             </Text>
 
             {!isLockedModal && !isErrorModal && (

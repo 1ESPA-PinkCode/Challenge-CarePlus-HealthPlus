@@ -1,13 +1,30 @@
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export default function RewardButton({ locked, onPress }) {
+export default function RewardButton({
+  locked,
+  redeemed,
+  onPress,
+}) {
   return (
     <TouchableOpacity
-      style={[styles.button, locked && styles.buttonLocked]}
+      style={[
+        styles.button,
+        locked && styles.buttonLocked,
+        redeemed && styles.buttonRedeemed,
+      ]}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>
-        {locked ? "Bloqueado" : "Resgatar"}
+      <Text
+        style={[
+          styles.buttonText,
+          redeemed && styles.buttonTextRedeemed,
+        ]}
+      >
+        {redeemed
+          ? "Resgatado"
+          : locked
+          ? "Bloqueado"
+          : "Resgatar"}
       </Text>
     </TouchableOpacity>
   );
@@ -32,9 +49,19 @@ const styles = StyleSheet.create({
     borderColor: "#16865F",
   },
 
+  buttonRedeemed: {
+    backgroundColor: "#BDBDBD",
+    borderWidth: 1,
+    borderColor: "#757575",
+  },
+
   buttonText: {
     color: "#16865F",
     fontSize: 14,
     fontWeight: "800",
+  },
+
+  buttonTextRedeemed: {
+    color: "#424242",
   },
 });

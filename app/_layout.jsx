@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { JardimProvider } from "../context/JardimContext";
+import { GemsProvider } from "../contexts/GemsContext";
 
 export default function RootLayout() {
   return (
@@ -13,6 +14,12 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
         </Stack>
       </JardimProvider>
+      <GemsProvider>
+        <StatusBar style="light" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </GemsProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,12 +1,18 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 import { colors } from "../constants/colors";
 
 export default function Greeting({ nome = "Lucas" }) {
   return (
-    <View style={styles.box}>
-      <Text style={styles.title}>Olá {nome}!</Text>
-      <Text style={styles.subtitle}>Como você está hoje?</Text>
-    </View>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => router.push("/chat")}
+    >
+      <View style={styles.box}>
+        <Text style={styles.title}>Olá {nome}!</Text>
+        <Text style={styles.subtitle}>Como você está hoje?</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 

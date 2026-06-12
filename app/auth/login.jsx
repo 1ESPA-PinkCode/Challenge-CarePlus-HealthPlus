@@ -150,7 +150,7 @@ export default function Login() {
       if (response.ok) {
         await salvarUsuario(data);
         router.replace("/(tabs)");
-        
+
       } else {
         setErro(data.erro || "CPF ou senha incorretos.");
       }
@@ -175,7 +175,7 @@ export default function Login() {
           {/* Topo branco — logo */}
           <View style={styles.topSection}>
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require("../../assets/images/logo_verde_transparente.png")}
               style={styles.logo}
               resizeMode="contain"
             />

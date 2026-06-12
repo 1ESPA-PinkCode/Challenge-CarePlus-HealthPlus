@@ -11,6 +11,7 @@ import { FLORES } from "../../components/blooms";
 import { useJardim } from "../../context/JardimContext";
 import { colors } from "../../constants/colors";
 import FlorAnimada from "../../components/FlorAnimada";
+import { useUsuario } from "../../context/UsuarioContext";
 
 const status = [
   { id: 1, icon: "water-outline", label: "Água", progress: 0.7, cor: colors.green4 },
@@ -31,6 +32,7 @@ function StatusItem({ icon, label, progress, cor }) {
 }
 
 export default function Inicio() {
+  const { usuario } = useUsuario();
   const router = useRouter();
   const { florAtual, missoesFeitas, setMissoesFeitas, totalMissoes } = useJardim();
 
@@ -45,7 +47,7 @@ export default function Inicio() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Greeting nome="Lucas" />
+      <Greeting nome={usuario?.nome || "visitante"} />
 
       {/* Card da flor */}
       <View style={styles.florCard}>

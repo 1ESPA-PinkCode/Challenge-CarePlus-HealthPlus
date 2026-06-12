@@ -10,6 +10,7 @@ import {
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
+import { useUsuario } from "../context/UsuarioContext";
 
 const CAREPLUS_URL = "https://www.careplus.com.br";
 
@@ -253,11 +254,12 @@ const steps = {
 };
 
 export default function Chat() {
+  const { usuario } = useUsuario();
   const [currentStep, setCurrentStep] = useState("start");
   const [messages, setMessages] = useState([
     {
       sender: "bloom",
-      text: steps.start.bloom,
+      text: `Oi${usuario?.nome ? `, ${usuario.nome.split(" ")[0]}` : ""}! Eu sou a Bloom. Vou te acompanhar com algumas perguntas simples para entender como você está hoje.`,
     },
   ]);
 

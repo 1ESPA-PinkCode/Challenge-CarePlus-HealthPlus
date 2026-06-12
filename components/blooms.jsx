@@ -2,6 +2,7 @@
 import React from "react";
 import { Circle, Ellipse, Path, G } from "react-native-svg";
 
+
 // pontos do miolo do girassol (as "sementinhas")
 const SUNFLOWER_DOTS = [
   [-6, -4], [4, -6], [-2, 2], [7, 3], [-8, 4],

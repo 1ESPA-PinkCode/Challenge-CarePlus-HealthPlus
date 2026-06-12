@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "react-native";
 import { colors } from "../../constants/colors";
+import { useUsuario } from "../../context/UsuarioContext";
 
 const { width } = Dimensions.get("window");
 
@@ -56,6 +57,7 @@ export default function Login() {
   const [lembrar, setLembrar] = useState(false);
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { salvarUsuario } = useUsuario();
   const [erro, setErro] = useState("");
   // Estados do modal de recuperação de senha
   const [modalVisivel, setModalVisivel] = useState(false);
@@ -146,10 +148,9 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        if (lembrar) {
-          await AsyncStorage.setItem("@healthplus:usuario", JSON.stringify(data));
-        }
+        await salvarUsuario(data);
         router.replace("/(tabs)");
+        
       } else {
         setErro(data.erro || "CPF ou senha incorretos.");
       }

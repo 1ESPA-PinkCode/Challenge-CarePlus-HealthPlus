@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -56,10 +57,67 @@ export default function Login() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  // Estados do modal de recuperação de senha
+  const [modalVisivel, setModalVisivel] = useState(false);
+  const [cpfRecupera, setCpfRecupera] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarNovaSenha, setConfirmarNovaSenha] = useState("");
+  const [erroModal, setErroModal] = useState("");
+  const [sucessoModal, setSucessoModal] = useState("");
+  const [loadingModal, setLoadingModal] = useState(false);
 
   function handleCPF(texto) {
     setCpf(formatarCPF(texto));
     setErro("");
+  }
+
+  async function handleRecuperarSenha() {
+    const cpfLimpo = cpfRecupera.replace(/[^\d]/g, "");
+
+    if (!validarCPF(cpfLimpo)) {
+      setErroModal("CPF inválido. Verifique e tente novamente.");
+      return;
+    }
+
+    if (novaSenha.length < 6) {
+      setErroModal("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    if (novaSenha !== confirmarNovaSenha) {
+      setErroModal("As senhas não coincidem.");
+      return;
+    }
+
+    setLoadingModal(true);
+    setErroModal("");
+
+    try {
+      const response = await fetch(`https://health-plus-api.onrender.com/usuario/${cpfLimpo}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senha: novaSenha }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSucessoModal("Senha atualizada com sucesso!");
+        setTimeout(() => {
+          setModalVisivel(false);
+          setCpfRecupera("");
+          setNovaSenha("");
+          setConfirmarNovaSenha("");
+          setSucessoModal("");
+        }, 2000);
+      } else {
+        setErroModal(data.erro || "CPF não encontrado.");
+      }
+    } catch (e) {
+      setErroModal("Erro de conexão. Verifique sua internet.");
+    } finally {
+      setLoadingModal(false);
+    }
   }
 
   async function handleEntrar() {
@@ -181,9 +239,10 @@ export default function Login() {
                 <Text style={styles.lembrarText}>Lembrar-me</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisivel(true)}>
                 <Text style={styles.esqueceuText}>Esqueceu sua senha?</Text>
               </TouchableOpacity>
+
             </View>
 
             {/* Botão entrar */}
@@ -209,6 +268,89 @@ export default function Login() {
           </View>
         </View>
       </ScrollView>
+      {/* Modal de recuperação de senha */}
+      <Modal
+        visible={modalVisivel}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisivel(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitulo}>Recuperar senha</Text>
+            <Text style={styles.modalSubtitulo}>
+              Digite seu CPF e a nova senha desejada.
+            </Text>
+
+            {/* CPF */}
+            <Text style={styles.modalLabel}>CPF</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="000.000.000-00"
+              placeholderTextColor="#ccc"
+              value={cpfRecupera}
+              onChangeText={(t) => { setCpfRecupera(formatarCPF(t)); setErroModal(""); }}
+              keyboardType="numeric"
+              maxLength={14}
+            />
+
+            {/* Nova senha */}
+            <Text style={styles.modalLabel}>Nova senha</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor="#ccc"
+              value={novaSenha}
+              onChangeText={(t) => { setNovaSenha(t); setErroModal(""); }}
+              secureTextEntry
+            />
+
+            {/* Confirmar senha */}
+            <Text style={styles.modalLabel}>Confirmar nova senha</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Repita a nova senha"
+              placeholderTextColor="#ccc"
+              value={confirmarNovaSenha}
+              onChangeText={(t) => { setConfirmarNovaSenha(t); setErroModal(""); }}
+              secureTextEntry
+            />
+
+            {/* Erro */}
+            {erroModal ? <Text style={styles.modalErro}>{erroModal}</Text> : null}
+
+            {/* Sucesso */}
+            {sucessoModal ? <Text style={styles.modalSucesso}>{sucessoModal}</Text> : null}
+
+            {/* Botões */}
+            <TouchableOpacity
+              style={styles.modalBotao}
+              onPress={handleRecuperarSenha}
+              activeOpacity={0.8}
+            >
+              {loadingModal ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.modalBotaoText}>Confirmar</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCancelar}
+              onPress={() => {
+                setModalVisivel(false);
+                setCpfRecupera("");
+                setNovaSenha("");
+                setConfirmarNovaSenha("");
+                setErroModal("");
+              }}
+            >
+              <Text style={styles.modalCancelarText}>Cancelar</Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -335,5 +477,78 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     textDecorationLine: "underline",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  modalBox: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 24,
+    width: "100%",
+  },
+  modalTitulo: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: colors.primary,
+    marginBottom: 6,
+  },
+  modalSubtitulo: {
+    fontSize: 13,
+    color: colors.inactive,
+    marginBottom: 20,
+  },
+  modalLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textDark,
+    marginBottom: 6,
+  },
+  modalInput: {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: colors.textDark,
+    marginBottom: 14,
+  },
+  modalErro: {
+    color: "#E53935",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  modalSucesso: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  modalBotao: {
+    backgroundColor: colors.primary,
+    borderRadius: 50,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  modalBotaoText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  modalCancelar: {
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  modalCancelarText: {
+    color: colors.inactive,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

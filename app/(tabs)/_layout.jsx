@@ -8,7 +8,6 @@ export default function TabsLayout() {
   return (
     <View style={styles.container}>
       <Header gemas={60} />
-
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}

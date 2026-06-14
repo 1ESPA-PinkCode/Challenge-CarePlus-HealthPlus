@@ -12,12 +12,7 @@ import { colors } from "../../constants/colors";
 import { useJardim } from "../../context/JardimContext";
 import { useMissoes } from "../../context/MissoesContext";
 import { useUsuario } from "../../context/UsuarioContext";
-
-const status = [
-  { id: 1, icon: "water-outline", label: "Água", progress: 0.7, cor: colors.green4 },
-  { id: 2, icon: "moon-outline", label: "Sono", progress: 0.85, cor: colors.green3 },
-  { id: 3, icon: "barbell-outline", label: "Exercício", progress: 0.4, cor: colors.green2 },
-];
+import { useGemas } from "../../contexts/GemsContext";
 
 function StatusItem({ icon, label, progress, cor }) {
   return (
@@ -35,11 +30,22 @@ export default function Inicio() {
   const { usuario } = useUsuario();
   const router = useRouter();
   const { florAtual } = useJardim();
-  const { concluidas, totalMissoes: totalReais, crescimentoFlor } = useMissoes();
+  const { missoes, registrar, concluidas, totalMissoes: totalReais, crescimentoFlor } = useMissoes();
+  const { addGemas } = useGemas();
 
   const progresso = crescimentoFlor;
   const florNome = FLORES[florAtual]?.nome ?? "Flor";
   const florFem = FLORES[florAtual]?.genero === "f";
+
+  // Status de autocuidado: lê o progresso real de cada missão
+  const cores = [colors.green4, colors.green3, colors.green2, colors.green4];
+  const statusReais = missoes.map((m, i) => ({
+    id: m.id,
+    icon: m.icon,
+    label: m.titulo,
+    progress: m.meta > 0 ? Math.min(1, m.atual / m.meta) : 0,
+    cor: cores[i % cores.length],
+  }));
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -85,35 +91,29 @@ export default function Inicio() {
         <Ionicons name="chevron-forward" size={22} color={colors.primary} />
       </TouchableOpacity>
 
-      {/* Principais Missões — agora usando o MissaoCard reutilizável */}
+      {/* Principais Missões — agora conectadas de verdade */}
       <TituloSecao>Principais Missões</TituloSecao>
       <View style={styles.bloco}>
-        <MissaoCard
-          icon="leaf-outline"
-          titulo="Meditação Matinal!"
-          desc="Pratique 10 minutos de meditação"
-          atual={10}
-          meta={10}
-          unidade="min"
-          gemas={30}
-          feita
-        />
-        <MissaoCard
-          icon="moon-outline"
-          titulo="Sono Reparador"
-          desc="Durma 8 horas essa noite"
-          atual={7}
-          meta={8}
-          unidade="horas"
-          gemas={10}
-          onRegistrar={() => {}}
-        />
+        {missoes.map((m) => (
+          <MissaoCard
+            key={m.id}
+            icon={m.icon}
+            titulo={m.titulo}
+            desc={m.desc}
+            atual={m.atual}
+            meta={m.meta}
+            unidade={m.unidade}
+            gemas={m.gemas}
+            feita={m.atual >= m.meta}
+            onRegistrar={() => registrar(m.id, addGemas, 1)}
+          />
+        ))}
       </View>
 
       {/* Status de Autocuidado */}
       <TituloSecao>Status de Autocuidado</TituloSecao>
       <View style={[styles.bloco, styles.statusBloco]}>
-        {status.map((s) => (
+        {statusReais.map((s) => (
           <StatusItem key={s.id} {...s} />
         ))}
       </View>

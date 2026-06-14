@@ -5,6 +5,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 const GruposContext = createContext(null);
 const STORAGE_KEY = "@healthplus:grupos_v1";
 
+// Gera um código de convite aleatório (ex: PINK-7K2F)
+function gerarCodigoConvite() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let sufixo = "";
+  for (let i = 0; i < 4; i++) {
+    sufixo += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `PINK-${sufixo}`;
+}
+
 // Grupo começa vazio — os membros são adicionados pelo usuário (por CPF)
 const MEMBROS_INICIAIS = [];
 
@@ -43,6 +53,7 @@ export function cpfValido(cpf) {
 
 export function GruposProvider({ children }) {
   const [nomeGrupo, setNomeGrupo] = useState("PinkCode");
+  const [codigoConvite, setCodigoConvite] = useState(gerarCodigoConvite());
   const [membros, setMembros] = useState(MEMBROS_INICIAIS);
   const [carregado, setCarregado] = useState(false);
 
@@ -71,21 +82,20 @@ export function GruposProvider({ children }) {
   }, [nomeGrupo, membros, carregado]);
 
   // Adiciona um membro por CPF. Retorna { ok, erro } pra tela mostrar feedback.
-  function adicionarMembro(nome, cpf) {
+  function adicionarMembro(nome) {
     const nomeLimpo = (nome || "").trim();
-    const cpfLimpo = limparCpf(cpf);
 
     if (nomeLimpo.length < 2) return { ok: false, erro: "Digite o nome da pessoa." };
-    if (!cpfValido(cpfLimpo)) return { ok: false, erro: "CPF inválido. Confira os números." };
-    if (membros.some((m) => limparCpf(m.cpf) === cpfLimpo))
+    if (membros.some((m) => m.nome.toLowerCase() === nomeLimpo.toLowerCase()))
       return { ok: false, erro: "Essa pessoa já está no grupo." };
 
+    const id = Date.now().toString(); // id único simples
     setMembros((lista) => [
       ...lista,
-      { cpf: cpfLimpo, nome: nomeLimpo, missoes: 0, vitorias: 0 },
+      { cpf: id, nome: nomeLimpo, missoes: 0, vitorias: 0 },
     ]);
     return { ok: true };
-  }
+   }
 
   function removerMembro(cpf) {
     const cpfLimpo = limparCpf(cpf);
@@ -101,6 +111,7 @@ export function GruposProvider({ children }) {
       value={{
         nomeGrupo,
         setNomeGrupo,
+        codigoConvite,
         membros,
         adicionarMembro,
         removerMembro,

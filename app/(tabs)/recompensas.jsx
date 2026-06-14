@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,22 @@ import {
   TouchableOpacity,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { useLocalSearchParams } from "expo-router";
 
 import { colors } from "../../constants/colors";
 import RewardCard from "../../components/RewardCard";
 import { useGemas } from "../../contexts/GemsContext";
 
 export default function Recompensas() {
-  const { gemas, removeGemas } = useGemas();
+  const {
+    gemas,
+    removeGemas,
+    redeemedRewards,
+    addRedeemedReward,
+  } = useGemas();
+  const { section } = useLocalSearchParams();
+  const scrollRef = useRef(null);
+  const resgatesY = useRef(0);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
@@ -22,7 +31,6 @@ export default function Recompensas() {
   const [isLockedModal, setIsLockedModal] = useState(false);
   const [isErrorModal, setIsErrorModal] = useState(false);
   const [generatedCoupon, setGeneratedCoupon] = useState("");
-  const [redeemedRewards, setRedeemedRewards] = useState({});
 
   const rewards = [
     {
@@ -72,7 +80,22 @@ export default function Recompensas() {
     ...reward,
     locked: gemas < reward.points,
     redeemed: !!redeemedRewards[reward.title],
+    coupon: redeemedRewards[reward.title],
   }));
+
+  const availableRewards = rewardsWithStatus.filter((reward) => !reward.redeemed);
+  const redeemedList = rewardsWithStatus.filter((reward) => reward.redeemed);
+
+  useEffect(() => {
+    if (section === "resgates") {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: resgatesY.current,
+          animated: true,
+        });
+      }, 500);
+    }
+  }, [section, redeemedRewards]);
 
   function openModal(reward) {
     setSelectedReward(reward);
@@ -100,10 +123,7 @@ export default function Recompensas() {
         setGeneratedCoupon(coupon);
         removeGemas(reward.points);
 
-        setRedeemedRewards((currentRewards) => ({
-          ...currentRewards,
-          [reward.title]: coupon,
-        }));
+       addRedeemedReward(reward.title, coupon);
       } catch (error) {
         setIsErrorModal(true);
       }
@@ -122,6 +142,7 @@ export default function Recompensas() {
   return (
     <>
       <ScrollView
+        ref={scrollRef}
         style={styles.container}
         contentContainerStyle={styles.content}
       >
@@ -130,13 +151,45 @@ export default function Recompensas() {
         </View>
 
         <View style={styles.grid}>
-          {rewardsWithStatus.map((reward, index) => (
+          {availableRewards.map((reward, index) => (
             <RewardCard
               key={index}
               reward={reward}
               onRedeem={() => openModal(reward)}
             />
           ))}
+        </View>
+
+        <View
+            style={styles.resgatesSection}
+            onLayout={(event) => {
+              resgatesY.current = event.nativeEvent.layout.y;
+            }}
+          >
+          <View style={styles.titleBox}>
+            <Text style={styles.title}>Recompensas resgatadas</Text>
+          </View>
+
+          {redeemedList.length === 0 ? (
+            <Text style={styles.resgatesEmpty}>
+              Você ainda não possui recompensas resgatadas.
+            </Text>
+          ) : (
+            <View style={styles.grid}>
+              {redeemedList.map((reward, index) => (
+                <RewardCard
+                  key={index}
+                  reward={reward}
+                  coupon={redeemedRewards[reward.title]}
+                  isRedeemedSection={true}
+                  onRedeem={() => openModal(reward)}
+                  onCopyCoupon={() => {
+                    Clipboard.setStringAsync(redeemedRewards[reward.title]);
+                  }}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -183,10 +236,7 @@ export default function Recompensas() {
                   <Text style={styles.coupon}>{generatedCoupon}</Text>
                 </View>
 
-                <TouchableOpacity
-                  style={styles.copyButton}
-                  onPress={copyCoupon}
-                >
+                <TouchableOpacity style={styles.copyButton} onPress={copyCoupon}>
                   <Text style={styles.copyButtonText}>
                     {copied ? "Cupom copiado!" : "Copiar cupom"}
                   </Text>
@@ -237,6 +287,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+  },
+
+  resgatesSection: {
+    marginTop: 20,
+  },
+
+  resgatesEmpty: {
+    backgroundColor: "#E4EFE4",
+    borderRadius: 14,
+    padding: 16,
+    color: colors.textDark,
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   modalOverlay: {

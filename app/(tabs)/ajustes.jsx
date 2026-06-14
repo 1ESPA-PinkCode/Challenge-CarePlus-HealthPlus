@@ -151,7 +151,7 @@ export default function Ajustes() {
     { icone: "lock-closed-outline", label: "Mudar Senha", onPress: () => setModalSenha(true) },
     { icone: "options-outline", label: "Preferências", onPress: () => setModalPrefs(true) },
     { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => {} },
-    { icone: "gift-outline", label: "Resgates", onPress: () => {} },
+    { icone: "gift-outline", label: "Resgates", onPress: () => router.push("/recompensas?section=resgates") },
   ];
 
   return (

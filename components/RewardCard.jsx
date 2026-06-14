@@ -1,28 +1,45 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import RewardButton from "./RewardButton";
 
 const gema = require("../assets/images/gema.png");
 
-export default function RewardCard({ reward, onRedeem }) {
+export default function RewardCard({
+  reward,
+  onRedeem,
+  coupon,
+  isRedeemedSection = false,
+  onCopyCoupon,
+}) {
   return (
     <View style={styles.card}>
       <View style={styles.textArea}>
         <Text style={styles.cardTitle}>{reward.title}</Text>
-
         <Text style={styles.description}>{reward.description}</Text>
       </View>
 
-      <View style={styles.pointsContainer}>
-        <Image source={gema} style={styles.gema} />
+      {isRedeemedSection ? (
+        <View style={styles.couponMiniBox}>
+          <Text style={styles.couponLabel}>Cupom</Text>
+          <Text style={styles.couponMiniText}>{coupon}</Text>
 
-        <Text style={styles.points}>{reward.points}</Text>
-      </View>
+          <TouchableOpacity style={styles.copyMiniButton} onPress={onCopyCoupon}>
+            <Text style={styles.copyMiniText}>Copiar</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          <View style={styles.pointsContainer}>
+            <Image source={gema} style={styles.gema} />
+            <Text style={styles.points}>{reward.points}</Text>
+          </View>
 
-      <RewardButton
-        locked={reward.locked}
-        redeemed={reward.redeemed}
-        onPress={onRedeem}
-      />
+          <RewardButton
+            locked={reward.locked}
+            redeemed={reward.redeemed}
+            onPress={onRedeem}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -40,7 +57,7 @@ const styles = StyleSheet.create({
 
   textArea: {
     width: "100%",
-    paddingBottom: 75,
+    paddingBottom: 55,
   },
 
   cardTitle: {
@@ -81,5 +98,44 @@ const styles = StyleSheet.create({
     textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1,
+  },
+
+  couponMiniBox: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    bottom: 14,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 7,
+    alignItems: "center",
+  },
+
+  couponLabel: {
+    color: "#16865F",
+    fontSize: 9,
+    fontWeight: "700",
+  },
+
+  couponMiniText: {
+    color: "#16865F",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1,
+    marginTop: 2,
+  },
+
+  copyMiniButton: {
+    marginTop: 6,
+    backgroundColor: "#16865F",
+    borderRadius: 14,
+    paddingVertical: 4,
+    paddingHorizontal: 18,
+  },
+
+  copyMiniText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "800",
   },
 });

@@ -1,16 +1,19 @@
-import { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
+  StyleSheet,
   Linking,
 } from "react-native";
+
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../constants/colors";
+
+import { useChat } from "../contexts/ChatContext";
 import { useUsuario } from "../context/UsuarioContext";
+import { colors } from "../constants/colors";
 
 const CAREPLUS_URL = "https://www.careplus.com.br";
 
@@ -216,7 +219,8 @@ const steps = {
   },
 
   cansacoFisico: {
-    bloom: "Seu corpo pode estar pedindo recuperação. Você dormiu bem e se alimentou hoje?",
+    bloom:
+      "Seu corpo pode estar pedindo recuperação. Você dormiu bem e se alimentou hoje?",
     options: [
       { text: "Sim", next: "cuidadosLeves" },
       { text: "Não muito", next: "cuidadosLeves" },
@@ -255,22 +259,30 @@ const steps = {
 
 export default function Chat() {
   const { usuario } = useUsuario();
-  const [currentStep, setCurrentStep] = useState("start");
-  const [messages, setMessages] = useState([
-    {
-      sender: "bloom",
-      text: `Oi${usuario?.nome ? `, ${usuario.nome.split(" ")[0]}` : ""}! Eu sou a Bloom. Vou te acompanhar com algumas perguntas simples para entender como você está hoje.`,
-    },
-  ]);
+
+  const {
+    messages,
+    setMessages,
+    currentStep,
+    setCurrentStep,
+    resetChat,
+  } = useChat();
 
   function handleOption(option) {
     if (option.next === "home") {
-      router.replace("/");
+      resetChat();
+      router.replace("/(tabs)");
       return;
     }
 
     if (option.next === "abrirCarePlus") {
       Linking.openURL(CAREPLUS_URL);
+      return;
+    }
+
+    const nextStep = steps[option.next];
+
+    if (!nextStep) {
       return;
     }
 
@@ -281,7 +293,7 @@ export default function Chat() {
 
     const bloomMessage = {
       sender: "bloom",
-      text: steps[option.next].bloom,
+      text: nextStep.bloom,
     };
 
     setMessages([...messages, userMessage, bloomMessage]);
@@ -291,13 +303,15 @@ export default function Chat() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace("/")}>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)")}>
           <Ionicons name="arrow-back" size={26} color="#FFFFFF" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Bloom</Text>
 
-        <View style={{ width: 26 }} />
+        <TouchableOpacity onPress={resetChat}>
+          <Ionicons name="refresh" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.chatContent}>
@@ -319,7 +333,7 @@ export default function Chat() {
       </ScrollView>
 
       <View style={styles.optionsContainer}>
-        {steps[currentStep].options.map((option, index) => (
+        {steps[currentStep]?.options?.map((option, index) => (
           <TouchableOpacity
             key={index}
             style={styles.optionButton}

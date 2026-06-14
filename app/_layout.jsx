@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { GruposProvider } from "../context/GruposContext";
 import { JardimProvider } from "../context/JardimContext";
 import { MissoesProvider } from "../context/MissoesContext";
 import { UsuarioProvider } from "../context/UsuarioContext";
@@ -16,15 +17,17 @@ export default function RootLayout() {
         <JardimProvider>
           <GemsProvider>
             <MissoesProvider>
-              <ChatProvider>
-                <StatusBar style="light" />
+              <GruposProvider>
+                <ChatProvider>
+                  <StatusBar style="light" />
 
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="chat" />
-                  <Stack.Screen name="auth/login" />
-                </Stack>
-              </ChatProvider>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="chat" />
+                    <Stack.Screen name="auth/login" />
+                  </Stack>
+                </ChatProvider>
+              </GruposProvider>
             </MissoesProvider>
           </GemsProvider>
         </JardimProvider>

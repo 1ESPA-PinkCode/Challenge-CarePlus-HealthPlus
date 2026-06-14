@@ -2,11 +2,12 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { UsuarioProvider } from "../context/UsuarioContext";
 import { JardimProvider } from "../context/JardimContext";
+import { MissoesProvider } from "../context/MissoesContext";
+import { UsuarioProvider } from "../context/UsuarioContext";
 
-import { GemsProvider } from "../contexts/GemsContext";
 import { ChatProvider } from "../contexts/ChatContext";
+import { GemsProvider } from "../contexts/GemsContext";
 
 export default function RootLayout() {
   return (
@@ -14,15 +15,17 @@ export default function RootLayout() {
       <UsuarioProvider>
         <JardimProvider>
           <GemsProvider>
-            <ChatProvider>
-              <StatusBar style="light" />
+            <MissoesProvider>
+              <ChatProvider>
+                <StatusBar style="light" />
 
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="chat" />
-                <Stack.Screen name="auth/login" />
-              </Stack>
-            </ChatProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="chat" />
+                  <Stack.Screen name="auth/login" />
+                </Stack>
+              </ChatProvider>
+            </MissoesProvider>
           </GemsProvider>
         </JardimProvider>
       </UsuarioProvider>

@@ -1,16 +1,16 @@
 // app/(tabs)/index.jsx
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Greeting from "../../components/Greeting";
-import Flor from "../../components/Flor";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import BarraProgresso from "../../components/BarraProgresso";
-import TituloSecao from "../../components/TituloSecao";
-import MissaoCard from "../../components/MissaoCard";
-import { FLORES } from "../../components/blooms";
-import { useJardim } from "../../context/JardimContext";
-import { colors } from "../../constants/colors";
 import FlorAnimada from "../../components/FlorAnimada";
+import Greeting from "../../components/Greeting";
+import MissaoCard from "../../components/MissaoCard";
+import TituloSecao from "../../components/TituloSecao";
+import { FLORES } from "../../components/blooms";
+import { colors } from "../../constants/colors";
+import { useJardim } from "../../context/JardimContext";
+import { useMissoes } from "../../context/MissoesContext";
 import { useUsuario } from "../../context/UsuarioContext";
 
 const status = [
@@ -34,16 +34,12 @@ function StatusItem({ icon, label, progress, cor }) {
 export default function Inicio() {
   const { usuario } = useUsuario();
   const router = useRouter();
-  const { florAtual, missoesFeitas, setMissoesFeitas, totalMissoes } = useJardim();
+  const { florAtual } = useJardim();
+  const { concluidas, totalMissoes: totalReais, crescimentoFlor } = useMissoes();
 
-  const progresso = missoesFeitas / totalMissoes;
+  const progresso = crescimentoFlor;
   const florNome = FLORES[florAtual]?.nome ?? "Flor";
   const florFem = FLORES[florAtual]?.genero === "f";
-
-  // ----- simulação de missões (ferramenta de teste) -----
-  const completarUma = () =>
-    setMissoesFeitas((n) => Math.min(totalMissoes, n + Math.ceil(totalMissoes / 5)));
-  const resetar = () => setMissoesFeitas(0);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -59,7 +55,7 @@ export default function Inicio() {
         <View style={styles.cena}>
           <FlorAnimada
             tipo={florAtual}
-            target={progresso}            // nasce até a flor cheia
+            target={progresso}
             duration={1800}
             showLabel={false}
             size={230}
@@ -67,22 +63,10 @@ export default function Inicio() {
         </View>
 
         <Text style={styles.progressoTitulo}>
-          {missoesFeitas} de {totalMissoes} missões completas!
+          {concluidas} de {totalReais} missões completas!
         </Text>
         <Text style={styles.progressoSub}>Parabéns! Você está indo bem</Text>
         <BarraProgresso progress={progresso} height={10} />
-
-        {/* ----- botões de simulação (remover na versão final) ----- */}
-        <View style={styles.simRow}>
-          <TouchableOpacity style={styles.simBtn} onPress={completarUma} activeOpacity={0.8}>
-            <Ionicons name="add" size={18} color={colors.white} />
-            <Text style={styles.simBtnText}>Simular missão</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.simBtn, styles.simBtnReset]} onPress={resetar} activeOpacity={0.8}>
-            <Ionicons name="refresh" size={18} color={colors.primary} />
-            <Text style={[styles.simBtnText, { color: colors.primary }]}>Resetar</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       {/* Botão do Jardim (simples) */}
@@ -162,24 +146,6 @@ const styles = StyleSheet.create({
   },
   progressoTitulo: { marginTop: 14, fontSize: 14, fontWeight: "700", color: colors.primary },
   progressoSub: { fontSize: 12, color: colors.green2, marginBottom: 8 },
-
-  simRow: { flexDirection: "row", gap: 10, marginTop: 14 },
-  simBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  simBtnReset: {
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-  },
-  simBtnText: { color: colors.white, fontWeight: "700", fontSize: 13 },
 
   jardimBtn: {
     flexDirection: "row",

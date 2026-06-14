@@ -1,6 +1,6 @@
 // components/MissaoCard.jsx
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../constants/colors";
 import BarraProgresso from "./BarraProgresso";
 
@@ -55,7 +55,7 @@ export default function MissaoCard({
       {/* rodapé: pílula de gemas + ação */}
       <View style={styles.rodape}>
         <View style={styles.gemaPill}>
-          <Text style={styles.gemaText}>+ {gemas} gemas</Text>
+          <Text style={styles.gemaText}> {gemas} gemas</Text>
           <Image
             source={require("../assets/images/gema.png")}
             style={styles.gema}
@@ -63,11 +63,12 @@ export default function MissaoCard({
           />
         </View>
 
-        {feita ? (
+       {feita ? (
           <Text style={styles.concluida}>Concluída!</Text>
         ) : (
-          <TouchableOpacity onPress={onRegistrar} activeOpacity={0.7}>
-            <Text style={styles.registrar}>Registrar {">"}</Text>
+          <TouchableOpacity style={styles.btnRegistrar} onPress={onRegistrar} activeOpacity={0.8}>
+            <Text style={styles.btnRegistrarTexto}>Registrar</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -162,5 +163,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: colors.primary,
+  },
+  btnRegistrar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  btnRegistrarTexto: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.white,
   },
 });

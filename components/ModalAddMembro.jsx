@@ -1,32 +1,40 @@
 // components/ModalAddMembro.jsx
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { colors } from "../constants/colors";
-import { formatarCpf } from "../context/GruposContext";
 
-export default function ModalAddMembro({ visivel, onFechar, onAdicionar }) {
+export default function ModalAddMembro({ visivel, onFechar, onAdicionar, codigoConvite }) {
   const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
   const [erro, setErro] = useState("");
+  const [copiado, setCopiado] = useState(false);
+
+  const link = `healthplus.app/grupo/${codigoConvite}`;
 
   function limpar() {
     setNome("");
-    setCpf("");
     setErro("");
+    setCopiado(false);
+  }
+
+  async function copiarLink() {
+    await Clipboard.setStringAsync(link);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   }
 
   function handleSalvar() {
-    const resultado = onAdicionar(nome, cpf);
+    const resultado = onAdicionar(nome);
     if (resultado.ok) {
       limpar();
       onFechar();
@@ -46,40 +54,49 @@ export default function ModalAddMembro({ visivel, onFechar, onAdicionar }) {
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View style={styles.card}>
             <View style={styles.topo}>
-              <Text style={styles.titulo}>Adicionar membro</Text>
+              <Text style={styles.titulo}>Convidar para o grupo</Text>
               <TouchableOpacity onPress={handleFechar}>
                 <Ionicons name="close" size={26} color={colors.primary} />
               </TouchableOpacity>
             </View>
 
             <Text style={styles.subtitulo}>
-              A pessoa precisa ter o convênio CarePlus (login por CPF).
+              Compartilhe o link de convite com seus amigos do CarePlus.
             </Text>
+
+            {/* link de convite */}
+            <View style={styles.linkBox}>
+              <Text style={styles.linkTexto} numberOfLines={1}>{link}</Text>
+            </View>
+
+            <TouchableOpacity style={styles.btnCopiar} onPress={copiarLink} activeOpacity={0.85}>
+              <Ionicons
+                name={copiado ? "checkmark" : "copy-outline"}
+                size={18}
+                color={colors.white}
+              />
+              <Text style={styles.btnCopiarTexto}>
+                {copiado ? "Link copiado!" : "Copiar link de convite"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* divisória */}
+            <View style={styles.divisor}>
+              <View style={styles.linha} />
+              <Text style={styles.divisorTexto}>ou adicione direto</Text>
+              <View style={styles.linha} />
+            </View>
 
             <Text style={styles.label}>Nome</Text>
             <TextInput
               style={styles.input}
-              placeholder="Nome completo"
+              placeholder="Nome da pessoa"
               placeholderTextColor="#A8A8A8"
               value={nome}
               onChangeText={(t) => {
                 setNome(t);
                 setErro("");
               }}
-            />
-
-            <Text style={styles.label}>CPF</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="000.000.000-00"
-              placeholderTextColor="#A8A8A8"
-              keyboardType="numeric"
-              value={cpf}
-              onChangeText={(t) => {
-                setCpf(formatarCpf(t));
-                setErro("");
-              }}
-              maxLength={14}
             />
 
             {erro ? <Text style={styles.erro}>{erro}</Text> : null}
@@ -114,7 +131,37 @@ const styles = StyleSheet.create({
   },
   titulo: { fontSize: 20, fontWeight: "800", color: colors.primary },
   subtitulo: { fontSize: 13, color: "#6A6A6A", marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: "700", color: colors.primary, marginBottom: 6, marginTop: 4 },
+
+  linkBox: {
+    backgroundColor: "#EAF3DC",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  linkTexto: { fontSize: 15, fontWeight: "700", color: colors.primary },
+
+  btnCopiar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 13,
+  },
+  btnCopiarTexto: { color: colors.white, fontSize: 15, fontWeight: "800" },
+
+  divisor: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 18,
+  },
+  linha: { flex: 1, height: 1, backgroundColor: colors.green3 },
+  divisorTexto: { fontSize: 13, color: "#9AA98C", fontWeight: "600" },
+
+  label: { fontSize: 14, fontWeight: "700", color: colors.primary, marginBottom: 6 },
   input: {
     borderWidth: 1.5,
     borderColor: colors.green3,
@@ -131,7 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
-    marginTop: 6,
+    marginTop: 2,
   },
   botaoTexto: { color: colors.white, fontSize: 16, fontWeight: "800" },
 });

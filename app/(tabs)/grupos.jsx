@@ -34,7 +34,7 @@ function LinhaRanking({ posicao, nome, detalhe, ultima }) {
 }
 
 export default function Grupos() {
-  const { nomeGrupo, membros, rankingMissoes, rankingVitorias, adicionarMembro } = useGrupos();
+  const { membros, rankingMissoes, rankingVitorias, adicionarMembro, codigoConvite } = useGrupos();
   const [modalVisivel, setModalVisivel] = useState(false);
 
   const vazio = membros.length === 0;
@@ -46,9 +46,6 @@ export default function Grupos() {
         <View style={styles.tituloBox}>
           <Text style={styles.tituloTexto}>Seus Grupos</Text>
         </View>
-
-        {/* nome do grupo */}
-        <Text style={styles.nomeGrupo}>{nomeGrupo}</Text>
 
         {vazio ? (
           <View style={styles.vazioBox}>
@@ -105,6 +102,7 @@ export default function Grupos() {
         visivel={modalVisivel}
         onFechar={() => setModalVisivel(false)}
         onAdicionar={adicionarMembro}
+        codigoConvite={codigoConvite}
       />
     </View>
   );

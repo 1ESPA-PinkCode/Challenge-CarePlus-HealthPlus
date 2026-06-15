@@ -1,4 +1,5 @@
 // app/(tabs)/ajustes.jsx
+import { useMissoes } from "../../context/MissoesContext";
 import { useState } from "react";
 import {
   View,
@@ -21,6 +22,11 @@ import { colors } from "../../constants/colors";
 export default function Ajustes() {
   const router = useRouter();
   const { usuario, salvarUsuario, logout } = useUsuario();
+  const { missoes, concluidas, totalMissoes } = useMissoes();
+  const [modalResumo, setModalResumo] = useState(false);
+  const gemasHoje = missoes
+    .filter((m) => m.atual >= m.meta)
+    .reduce((acc, m) => acc + m.gemas, 0);
 
   const [foto, setFoto] = useState(usuario?.foto || null);
 
@@ -150,7 +156,7 @@ export default function Ajustes() {
     { icone: "create-outline", label: "Editar Perfil", onPress: () => setModalPerfil(true) },
     { icone: "lock-closed-outline", label: "Mudar Senha", onPress: () => setModalSenha(true) },
     { icone: "options-outline", label: "Preferências", onPress: () => setModalPrefs(true) },
-    { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => {} },
+    { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => setModalResumo(true) },
     { icone: "gift-outline", label: "Resgates", onPress: () => router.push("/recompensas?section=resgates") },
   ];
 
@@ -295,7 +301,55 @@ export default function Ajustes() {
           </View>
         </View>
       </Modal>
+      
+      {/* Modal Resumo Diário */}
+      <Modal visible={modalResumo} transparent animationType="slide" onRequestClose={() => setModalResumo(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitulo}>Resumo do dia</Text>
 
+            {/* Progresso geral */}
+            <View style={styles.resumoProgresso}>
+              <Text style={styles.resumoTexto}>
+                {concluidas} de {totalMissoes} missões concluídas
+              </Text>
+              <View style={styles.resumoBarra}>
+                <View style={[styles.resumoBarraFill, { width: `${(concluidas / totalMissoes) * 100}%` }]} />
+              </View>
+              <Text style={styles.resumoGemas}>🔮 {gemasHoje} gemas ganhas hoje</Text>
+            </View>
+
+            {/* Lista de missões */}
+            {missoes.map((m) => {
+              const concluida = m.atual >= m.meta;
+              return (
+                <View key={m.id} style={styles.resumoItem}>
+                  <View style={[styles.resumoIcone, concluida && styles.resumoIconeConcluido]}>
+                    <Ionicons
+                      name={m.icon}
+                      size={18}
+                      color={concluida ? colors.white : colors.primary}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.resumoItemTitulo}>{m.titulo}</Text>
+                    <Text style={styles.resumoItemDesc}>
+                      {m.atual} / {m.meta} {m.unidade}
+                    </Text>
+                  </View>
+                  {concluida && (
+                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                  )}
+                </View>
+              );
+            })}
+
+            <TouchableOpacity style={styles.modalBotao} onPress={() => setModalResumo(false)}>
+              <Text style={styles.modalBotaoText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -389,4 +443,63 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   toggleCircleAtivo: { alignSelf: "flex-end" },
+
+  resumoProgresso: {
+    backgroundColor: "#F5F9F5",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+  },
+  resumoTexto: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.primary,
+    marginBottom: 8,
+  },
+  resumoBarra: {
+    height: 8,
+    backgroundColor: "#E0EDE8",
+    borderRadius: 50,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  resumoBarraFill: {
+    height: "100%",
+    backgroundColor: colors.primary,
+    borderRadius: 50,
+  },
+  resumoGemas: {
+    fontSize: 13,
+    color: colors.textDark,
+    fontWeight: "600",
+  },
+  resumoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  resumoIcone: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#E8F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  resumoIconeConcluido: {
+    backgroundColor: colors.primary,
+  },
+  resumoItemTitulo: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textDark,
+  },
+  resumoItemDesc: {
+    fontSize: 12,
+    color: colors.inactive,
+    marginTop: 2,
+  },
 });

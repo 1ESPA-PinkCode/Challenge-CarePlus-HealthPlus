@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const GemsContext = createContext();
 
 export function GemsProvider({ children }) {
-  const [gemas, setGemas] = useState(150);
+  const [gemas, setGemas] = useState(0);
   const [redeemedRewards, setRedeemedRewards] = useState({});
   const [loaded, setLoaded] = useState(false);
 

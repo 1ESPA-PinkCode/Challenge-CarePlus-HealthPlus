@@ -17,7 +17,7 @@ export default function Missoes() {
       >
         <Text style={styles.titulo}>Missões do Dia</Text>
         <Text style={styles.subtitulo}>
-          Complete suas missões e cultive seu jardim 🌱
+          Complete suas missões e cultive seu jardim
         </Text>
 
         {missoes.map((m) => (

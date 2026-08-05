@@ -148,12 +148,9 @@ Projeto desenvolvido por estudantes de Engenharia de Software da FIAP:
 
 ## 📸 Demonstração
 
-Tela Inicial:
 <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/eeb1b8de-3835-49e8-b69a-e2f4fbe5222b" />
 
-Missões:
 <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/54ea4308-0ae0-4b01-8bcb-db0dfadb9e48" />
 
-Bate papo com a Bloom, assistente virtual:
 <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/d734f594-3a43-40ff-b862-66b0e9566626" />
 

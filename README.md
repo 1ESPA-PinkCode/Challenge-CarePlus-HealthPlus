@@ -1,16 +1,16 @@
-# 🌱 Health Plus
+#  Health Plus
 
 O **Health Plus** é um aplicativo mobile desenvolvido para incentivar a criação e a manutenção de hábitos saudáveis de forma simples, acessível e motivadora.
 
 A plataforma combina acompanhamento de atividades, missões e elementos de gamificação. Conforme o usuário evolui em sua rotina, também acompanha o crescimento da **Bloom**, uma flor virtual que representa seu progresso dentro do aplicativo.
 
-## 📱 Sobre o projeto
+##  Sobre o projeto
 
 O Health Plus foi desenvolvido como um projeto acadêmico por estudantes de **Engenharia de Software da FIAP**.
 
 A proposta surgiu da necessidade de tornar o cuidado com a saúde mais presente no dia a dia. Em vez de apenas exibir números, o aplicativo procura transformar pequenas ações — como caminhar, cumprir missões e manter uma rotina saudável — em uma experiência visual e interativa.
 
-## ✨ Principais funcionalidades
+##  Principais funcionalidades
 
 - Cadastro e autenticação de usuários;
 - Recuperação de senha;
@@ -23,7 +23,7 @@ A proposta surgiu da necessidade de tornar o cuidado com a saúde mais presente 
 - Convite e interação com outros usuários;
 - Interface responsiva e intuitiva.
 
-## 🌸 Gamificação 
+##  Gamificação 
 
 As flores são a parte central do Health Plus.
 
@@ -33,7 +33,7 @@ Esse conceito foi criado para representar visualmente a ideia de que:
 
 > Assim como uma flor precisa de cuidado constante para crescer, hábitos saudáveis também são construídos aos poucos.
 
-## 🛠️ Tecnologias utilizadas
+##  Tecnologias utilizadas
 
 - **React Native**
 - **Expo**
@@ -45,7 +45,7 @@ Esse conceito foi criado para representar visualmente a ideia de que:
 - **Git e GitHub**
 - **Figma**
 
-## 📂 Estrutura do projeto
+##  Estrutura do projeto
 
 ```text
 health-plus/
@@ -62,7 +62,7 @@ health-plus/
 └── README.md            # Documentação do projeto
 ```
 
-## 🚀 Como executar o projeto
+##  Como executar o projeto
 
 Antes de começar, é necessário ter instalado:
 
@@ -103,7 +103,7 @@ Depois, utilize uma das opções apresentadas no terminal:
 - Execute em um simulador iOS;
 - Abra a versão web, caso esteja configurada.
 
-## 🎨 Design e experiência do usuário
+##  Design e experiência do usuário
 
 A interface foi planejada no Figma, considerando:
 
@@ -114,7 +114,7 @@ A interface foi planejada no Figma, considerando:
 - Experiência adequada para dispositivos móveis;
 - Uso da Bloom como elemento de conexão entre as funcionalidades.
 
-## 🎯 Desafios do desenvolvimento
+##  Desafios do desenvolvimento
 
 Um dos principais desafios foi equilibrar a complexidade das ideias com o prazo disponível para a entrega.
 
@@ -122,7 +122,7 @@ Inicialmente, a gamificação seria representada por um personagem mais complexo
 
 A mudança preservou a essência da proposta, simplificou o desenvolvimento e tornou a identidade visual mais consistente. A partir dessa decisão, as recompensas, as telas e a comunicação do aplicativo passaram a ser construídas em torno da Bloom.
 
-## 📚 Aprendizados
+##  Aprendizados
 
 O desenvolvimento do Health Plus proporcionou aprendizados relacionados a:
 
@@ -137,7 +137,7 @@ O desenvolvimento do Health Plus proporcionou aprendizados relacionados a:
 - Versionamento de código com Git e GitHub;
 - Uso de inteligência artificial como apoio à pesquisa, revisão de código e compreensão de novas tecnologias.
 
-## 👥 Equipe
+##  Equipe
 
 Projeto desenvolvido por estudantes de Engenharia de Software da FIAP:
 
@@ -146,7 +146,7 @@ Projeto desenvolvido por estudantes de Engenharia de Software da FIAP:
 - Maria Luiza Kochnoff da Matta
 - Roberta Moreira dos Santos
 
-## 📸 Demonstração
+##  Demonstração
 
 <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/eeb1b8de-3835-49e8-b69a-e2f4fbe5222b" />
 

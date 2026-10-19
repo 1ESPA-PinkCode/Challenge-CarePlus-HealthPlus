@@ -8,6 +8,7 @@ const icons = {
   grupos: "people-outline",
   index: "home-outline",
   missoes: "star-outline",
+  ranking: "trophy-outline",
   ajustes: "settings-outline",
 };
 
@@ -81,9 +82,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
   },

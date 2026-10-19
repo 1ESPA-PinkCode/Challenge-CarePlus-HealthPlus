@@ -9,6 +9,7 @@ import BarraProgresso from "../components/BarraProgresso";
 import TituloSecao from "../components/TituloSecao";
 import { FLORES, FLORES_ORDEM } from "../components/blooms";
 import { useJardim } from "../context/JardimContext";
+import { useMissoes } from "../context/MissoesContext";
 import { colors } from "../constants/colors";
 
 const CENA_W = 340;
@@ -18,6 +19,7 @@ export default function Jardim() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { florAtual, setFlorAtual, nivelUsuario } = useJardim();
+  const { concluirAuto } = useMissoes();
 
   const desbloqueadas = FLORES_ORDEM.filter((t) => nivelUsuario >= FLORES[t].nivel);
   const total = FLORES_ORDEM.length;
@@ -94,6 +96,7 @@ export default function Jardim() {
           const onPress = () => {
             if (bloqueada) return;
             setFlorAtual(tipo);
+            concluirAuto("flor");
           };
 
           return (

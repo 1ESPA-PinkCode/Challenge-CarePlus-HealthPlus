@@ -7,6 +7,7 @@ import { MissoesProvider } from "../context/MissoesContext";
 import { UsuarioProvider } from "../context/UsuarioContext";
 import { ChatProvider } from "../contexts/ChatContext";
 import { GemsProvider } from "../contexts/GemsContext";
+import AvisoConquista from "../components/AvisoConquista";
 
 export default function RootLayout() {
   return (
@@ -28,6 +29,7 @@ export default function RootLayout() {
                     <Stack.Screen name="auth/login" />
                     <Stack.Screen name="auth/cadastro" />
                   </Stack>
+                  <AvisoConquista />
                 </ChatProvider>
               </GruposProvider>
             </MissoesProvider>

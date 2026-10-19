@@ -1,368 +1,107 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Modal,
-  TouchableOpacity,
-} from "react-native";
-import * as Clipboard from "expo-clipboard";
-import { useLocalSearchParams } from "expo-router";
-
+// app/(tabs)/recompensas.jsx — doces surpresa ganhos nas missões
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../constants/colors";
-import RewardCard from "../../components/RewardCard";
+import { CATALOGO_MISSOES } from "../../context/MissoesContext";
 import { useGemas } from "../../contexts/GemsContext";
 
+const nomeMissao = (id) => CATALOGO_MISSOES.find((m) => m.id === id)?.titulo || id;
+
 export default function Recompensas() {
-  const {
-    gemas,
-    resgatar,
-    redeemedRewards,
-  } = useGemas();
-  const { section } = useLocalSearchParams();
-  const scrollRef = useRef(null);
-  const resgatesY = useRef(0);
+  const { doces, carregarDoces } = useGemas();
+  const pendentes = doces.filter((d) => !d.entregue);
+  const entregues = doces.filter((d) => d.entregue);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReward, setSelectedReward] = useState(null);
-  const [copied, setCopied] = useState(false);
-  const [isLockedModal, setIsLockedModal] = useState(false);
-  const [isErrorModal, setIsErrorModal] = useState(false);
-  const [generatedCoupon, setGeneratedCoupon] = useState("");
+  useFocusEffect(
+    useCallback(() => {
+      carregarDoces();
+    }, [carregarDoces])
+  );
 
-  const rewards = [
-    {
-      title: "Squeeze",
-      description: "Retire no local informado após confirmar seu resgate.",
-      points: 200,
-    },
-    {
-      title: "App Meditação",
-      description: "O cupom será gerado após o resgate.",
-      points: 205,
-    },
-    {
-      title: "Gift Card (R$20)",
-      description: "O cupom será gerado após o resgate.",
-      points: 150,
-    },
-    {
-      title: "Kit de Snacks",
-      description: "Retire no local informado após confirmar seu resgate.",
-      points: 70,
-    },
-    {
-      title: "20% OFF Skincare",
-      description: "Retire no local informado após confirmar seu resgate.",
-      points: 200,
-    },
-    {
-      title: "Aula de Yoga",
-      description: "O cupom será gerado após o resgate.",
-      points: 200,
-    },
-  ];
-
-  const rewardsWithStatus = rewards.map((reward) => ({
-    ...reward,
-    locked: gemas < reward.points,
-    redeemed: !!redeemedRewards[reward.title],
-    coupon: redeemedRewards[reward.title],
-  }));
-
-  const availableRewards = rewardsWithStatus.filter((reward) => !reward.redeemed);
-  const redeemedList = rewardsWithStatus.filter((reward) => reward.redeemed);
-
+  // atualiza enquanto a pessoa está na fila do estande
   useEffect(() => {
-    if (section === "resgates") {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          y: resgatesY.current,
-          animated: true,
-        });
-      }, 500);
-    }
-  }, [section, redeemedRewards]);
-
-  async function openModal(reward) {
-    setSelectedReward(reward);
-    setCopied(false);
-    setIsErrorModal(false);
-    setGeneratedCoupon("");
-
-    if (redeemedRewards[reward.title]) {
-      setGeneratedCoupon(redeemedRewards[reward.title]);
-      setIsLockedModal(false);
-      setModalVisible(true);
-      return;
-    }
-
-    setIsLockedModal(reward.locked);
-
-    if (!reward.locked) {
-      try {
-        const coupon = await resgatar(reward.title, reward.points);
-        setGeneratedCoupon(coupon);
-      } catch (error) {
-        setIsErrorModal(true);
-      }
-    }
-
-    setModalVisible(true);
-  }
-
-  async function copyCoupon() {
-    if (!generatedCoupon) return;
-
-    await Clipboard.setStringAsync(generatedCoupon);
-    setCopied(true);
-  }
+    const t = setInterval(carregarDoces, 15000);
+    return () => clearInterval(t);
+  }, [carregarDoces]);
 
   return (
-    <>
-      <ScrollView
-        ref={scrollRef}
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <View style={styles.titleBox}>
-          <Text style={styles.title}>Recompensas</Text>
-        </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.titleBox}>
+        <Text style={styles.title}>Seus doces 🍬</Text>
+      </View>
 
-        <View style={styles.grid}>
-          {availableRewards.map((reward, index) => (
-            <RewardCard
-              key={index}
-              reward={reward}
-              onRedeem={() => openModal(reward)}
-            />
-          ))}
+      <View style={styles.premio}>
+        <Text style={styles.premioEmoji}>🍫</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.premioTitulo}>Grande prêmio</Text>
+          <Text style={styles.premioTexto}>Quem estiver em 1º no ranking às 18:00 ganha uma caixa de bombom!</Text>
         </View>
+      </View>
 
-        <View
-            style={styles.resgatesSection}
-            onLayout={(event) => {
-              resgatesY.current = event.nativeEvent.layout.y;
-            }}
-          >
-          <View style={styles.titleBox}>
-            <Text style={styles.title}>Recompensas resgatadas</Text>
+      <Text style={styles.explicacao}>
+        Cada missão concluída vale um doce surpresa. Mostre o código no estande do Health Plus para retirar.
+      </Text>
+
+      {doces.length === 0 && (
+        <View style={styles.vazio}>
+          <Text style={{ fontSize: 48 }}>🍭</Text>
+          <Text style={styles.vazioTexto}>Conclua sua primeira missão para ganhar um doce!</Text>
+        </View>
+      )}
+
+      {pendentes.length > 0 && <Text style={styles.secao}>Para retirar ({pendentes.length})</Text>}
+      {pendentes.map((d) => (
+        <View key={d.codigo} style={styles.cupom}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cupomMissao}>{nomeMissao(d.missao_id)}</Text>
+            <Text style={styles.cupomLabel}>Mostre este código no estande</Text>
           </View>
-
-          {redeemedList.length === 0 ? (
-            <Text style={styles.resgatesEmpty}>
-              Você ainda não possui recompensas resgatadas.
-            </Text>
-          ) : (
-            <View style={styles.grid}>
-              {redeemedList.map((reward, index) => (
-                <RewardCard
-                  key={index}
-                  reward={reward}
-                  coupon={redeemedRewards[reward.title]}
-                  isRedeemedSection={true}
-                  onRedeem={() => openModal(reward)}
-                  onCopyCoupon={() => {
-                    Clipboard.setStringAsync(redeemedRewards[reward.title]);
-                  }}
-                />
-              ))}
-            </View>
-          )}
+          <Text style={styles.cupomCodigo}>{d.codigo}</Text>
         </View>
-      </ScrollView>
+      ))}
 
-      <Modal transparent visible={modalVisible} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>
-              {isErrorModal
-                ? "Ops! Não conseguimos finalizar seu resgate"
-                : isLockedModal
-                ? "Recompensa bloqueada"
-                : redeemedRewards[selectedReward?.title]
-                ? "Cupom já resgatado"
-                : "Parabéns pela conquista!"}
-            </Text>
-
-            <Text style={styles.modalText}>
-              {isErrorModal
-                ? "Pode ter sido sua internet ou um problema temporário. Tente novamente em alguns instantes."
-                : isLockedModal
-                ? `Você ainda não possui gemas suficientes para resgatar "${selectedReward?.title}". Complete mais missões para desbloquear essa recompensa.`
-                : redeemedRewards[selectedReward?.title]
-                ? "Esse cupom já foi resgatado anteriormente. Você pode copiar e usar o mesmo código abaixo."
-                : "Você está cuidando de você e isso merece ser celebrado. Sua recompensa já está disponível para resgate!"}
-            </Text>
-
-            <Text style={styles.heart}>
-              {isErrorModal
-                ? "⚠️"
-                : isLockedModal
-                ? "🔒"
-                : redeemedRewards[selectedReward?.title]
-                ? "🎟️"
-                : "💚"}
-            </Text>
-
-            {!isLockedModal && !isErrorModal && (
-              <>
-                <Text style={styles.modalSubtitle}>
-                  Utilize o cupom abaixo:
-                </Text>
-
-                <View style={styles.couponBox}>
-                  <Text style={styles.coupon}>{generatedCoupon}</Text>
-                </View>
-
-                <TouchableOpacity style={styles.copyButton} onPress={copyCoupon}>
-                  <Text style={styles.copyButtonText}>
-                    {copied ? "Cupom copiado!" : "Copiar cupom"}
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeButtonText}>Fechar</Text>
-            </TouchableOpacity>
+      {entregues.length > 0 && <Text style={styles.secao}>Já retirados ({entregues.length})</Text>}
+      {entregues.map((d) => (
+        <View key={d.codigo} style={[styles.cupom, styles.cupomEntregue]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.cupomMissao, { color: "#8A8A8A" }]}>{nomeMissao(d.missao_id)}</Text>
+            <Text style={styles.cupomLabel}>Doce entregue ✓</Text>
           </View>
+          <Text style={[styles.cupomCodigo, styles.codigoRiscado]}>{d.codigo}</Text>
         </View>
-      </Modal>
-    </>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 120,
-  },
-
-  titleBox: {
-    backgroundColor: colors.primary,
-    borderRadius: 40,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-
-  title: {
-    color: "#FFF",
-    fontSize: 22,
-    fontWeight: "800",
-  },
-
-  grid: {
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 16, paddingBottom: 40 },
+  titleBox: { backgroundColor: colors.primary, borderRadius: 30, paddingVertical: 18, paddingHorizontal: 24, marginBottom: 14 },
+  title: { fontSize: 30, fontWeight: "800", color: colors.white },
+  premio: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FBF1B8", borderRadius: 20, padding: 16, marginBottom: 12 },
+  premioEmoji: { fontSize: 44 },
+  premioTitulo: { fontSize: 17, fontWeight: "900", color: "#3A4A1F" },
+  premioTexto: { fontSize: 14, color: "#5A6B2F", marginTop: 2 },
+  explicacao: { fontSize: 14, color: "#4A4A4A", lineHeight: 20, marginBottom: 14 },
+  vazio: { alignItems: "center", padding: 30, gap: 8 },
+  vazioTexto: { color: "#6A6A6A", textAlign: "center", fontSize: 15 },
+  secao: { fontSize: 15, color: "#9AA98C", fontWeight: "700", marginBottom: 8, marginTop: 6 },
+  cupom: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-
-  resgatesSection: {
-    marginTop: 20,
-  },
-
-  resgatesEmpty: {
-    backgroundColor: "#E4EFE4",
-    borderRadius: 14,
+    alignItems: "center",
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: colors.green4,
+    borderStyle: "dashed",
     padding: 16,
-    color: colors.textDark,
-    fontSize: 14,
-    fontWeight: "600",
+    marginBottom: 10,
   },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-
-  modalBox: {
-    width: "100%",
-    backgroundColor: "#003C2D",
-    borderRadius: 8,
-    padding: 28,
-    alignItems: "center",
-  },
-
-  modalTitle: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "900",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-
-  modalText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    lineHeight: 24,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
-  heart: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-
-  modalSubtitle: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "900",
-    textAlign: "center",
-    marginBottom: 14,
-  },
-
-  couponBox: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-    marginBottom: 16,
-  },
-
-  coupon: {
-    color: "#16865F",
-    fontSize: 22,
-    fontWeight: "900",
-    letterSpacing: 1,
-  },
-
-  copyButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 28,
-    marginBottom: 12,
-  },
-
-  copyButtonText: {
-    color: "#16865F",
-    fontSize: 15,
-    fontWeight: "800",
-  },
-
-  closeButton: {
-    paddingVertical: 6,
-  },
-
-  closeButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "700",
-  },
+  cupomEntregue: { borderColor: "#DDD", backgroundColor: "#FAFAFA" },
+  cupomMissao: { fontSize: 16, fontWeight: "800", color: "#1A1A1A" },
+  cupomLabel: { fontSize: 12, color: "#8A8A8A", marginTop: 2 },
+  cupomCodigo: { fontSize: 24, fontWeight: "900", color: colors.primary, letterSpacing: 2 },
+  codigoRiscado: { color: "#BBB", textDecorationLine: "line-through" },
 });

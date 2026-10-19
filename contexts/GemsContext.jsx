@@ -1,4 +1,4 @@
-// contexts/GemsContext.jsx — saldo de gemas e resgates, vindos do banco
+// contexts/GemsContext.jsx — pontos (gemas) e cupons de doce, vindos do banco
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useUsuario } from "../context/UsuarioContext";
 import { supabase } from "../lib/supabase";
@@ -7,38 +7,36 @@ const GemsContext = createContext(null);
 
 export function GemsProvider({ children }) {
   const { perfil, recarregarPerfil } = useUsuario();
-  const [redeemedRewards, setRedeemedRewards] = useState({});
+  const [doces, setDoces] = useState([]);
   const userId = perfil?.id;
 
-  const carregarResgates = useCallback(async () => {
+  const carregarDoces = useCallback(async () => {
     if (!userId) {
-      setRedeemedRewards({});
+      setDoces([]);
       return;
     }
-    const { data } = await supabase.from("resgates").select("titulo, cupom").eq("usuario_id", userId);
-    setRedeemedRewards(Object.fromEntries((data || []).map((r) => [r.titulo, r.cupom])));
+    const { data } = await supabase
+      .from("doces")
+      .select("missao_id, codigo, entregue, criado_em")
+      .eq("usuario_id", userId)
+      .order("criado_em", { ascending: false });
+    setDoces(data || []);
   }, [userId]);
 
   useEffect(() => {
-    carregarResgates();
-  }, [carregarResgates]);
-
-  // As gemas são somadas pelo banco ao concluir missões; aqui só atualizamos o saldo.
-  function addGemas() {
-    recarregarPerfil();
-  }
-
-  // Resgata no banco (confere saldo e gera o cupom). Retorna o cupom.
-  async function resgatar(titulo, custo) {
-    const { data, error } = await supabase.rpc("resgatar", { p_titulo: titulo, p_custo: custo });
-    if (error) throw error;
-    setRedeemedRewards((atual) => ({ ...atual, [titulo]: data }));
-    recarregarPerfil();
-    return data;
-  }
+    carregarDoces();
+  }, [carregarDoces]);
 
   return (
-    <GemsContext.Provider value={{ gemas: perfil?.gemas ?? 0, addGemas, resgatar, redeemedRewards }}>
+    <GemsContext.Provider
+      value={{
+        gemas: perfil?.gemas ?? 0,
+        pontos: (perfil?.gemas ?? 0) + Math.floor((perfil?.passos ?? 0) / 100),
+        addGemas: recarregarPerfil,
+        doces,
+        carregarDoces,
+      }}
+    >
       {children}
     </GemsContext.Provider>
   );

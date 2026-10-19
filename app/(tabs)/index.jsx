@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import BarraProgresso from "../../components/BarraProgresso";
 import FlorAnimada from "../../components/FlorAnimada";
 import Greeting from "../../components/Greeting";
-import MissaoCard from "../../components/MissaoCard";
+import ListaMissoes from "../../components/ListaMissoes";
 import TituloSecao from "../../components/TituloSecao";
 import { FLORES } from "../../components/blooms";
 import { colors } from "../../constants/colors";
@@ -28,10 +28,10 @@ function StatusItem({ icon, label, progress, cor }) {
 
 export default function Inicio() {
   const { usuario } = useUsuario();
+  const { pontos } = useGemas();
   const router = useRouter();
   const { florAtual } = useJardim();
-  const { missoes, registrar, concluidas, totalMissoes: totalReais, crescimentoFlor } = useMissoes();
-  const { addGemas } = useGemas();
+  const { missoes, concluidas, totalMissoes: totalReais, crescimentoFlor } = useMissoes();
 
   const progresso = crescimentoFlor;
   const florNome = FLORES[florAtual]?.nome ?? "Flor";
@@ -92,36 +92,41 @@ export default function Inicio() {
       </TouchableOpacity>
 
       {/* Principais Missões — agora conectadas de verdade */}
-      <TituloSecao>Principais Missões</TituloSecao>
+      <TituloSecao>Próximas missões</TituloSecao>
       <View style={styles.bloco}>
-        {missoes.map((m) => (
-          <MissaoCard
-            key={m.id}
-            icon={m.icon}
-            titulo={m.titulo}
-            desc={m.desc}
-            atual={m.atual}
-            meta={m.meta}
-            unidade={m.unidade}
-            gemas={m.gemas}
-            feita={m.atual >= m.meta}
-            onRegistrar={() => registrar(m.id, addGemas, 1)}
-          />
-        ))}
+        <ListaMissoes soPendentes limite={3} />
+        <TouchableOpacity style={styles.verTodas} onPress={() => router.push("/missoes")}>
+          <Text style={styles.verTodasTexto}>Ver todas as missões</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
-      {/* Status de Autocuidado */}
-      <TituloSecao>Status de Autocuidado</TituloSecao>
-      <View style={[styles.bloco, styles.statusBloco]}>
-        {statusReais.map((s) => (
-          <StatusItem key={s.id} {...s} />
-        ))}
+      {/* Gincana NEXT */}
+      <TituloSecao>Gincana NEXT</TituloSecao>
+      <View style={styles.gincana}>
+        <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/ranking")} activeOpacity={0.85}>
+          <Text style={styles.gincanaEmoji}>🏆</Text>
+          <Text style={styles.gincanaTitulo}>{pontos} pontos</Text>
+          <Text style={styles.gincanaSub}>Ver ranking</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/passos")} activeOpacity={0.85}>
+          <Text style={styles.gincanaEmoji}>👟</Text>
+          <Text style={styles.gincanaTitulo}>{(usuario?.passos ?? 0).toLocaleString("pt-BR")} passos</Text>
+          <Text style={styles.gincanaSub}>Contar passos</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  gincana: { flexDirection: "row", gap: 12, marginHorizontal: 16 },
+  gincanaCard: { flex: 1, backgroundColor: "#EAF3DC", borderRadius: 20, padding: 16, alignItems: "center" },
+  gincanaEmoji: { fontSize: 34 },
+  gincanaTitulo: { fontSize: 18, fontWeight: "900", color: colors.primary, marginTop: 4 },
+  gincanaSub: { fontSize: 13, color: "#5A6B2F", fontWeight: "700", marginTop: 2 },
+  verTodas: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 10 },
+  verTodasTexto: { color: colors.primary, fontWeight: "800", fontSize: 15 },
   container: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: 24 },
 

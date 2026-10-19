@@ -16,6 +16,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="grupos" />
         <Tabs.Screen name="index" />
         <Tabs.Screen name="missoes" />
+        <Tabs.Screen name="ranking" />
         <Tabs.Screen name="ajustes" />
       </Tabs>
     </View>

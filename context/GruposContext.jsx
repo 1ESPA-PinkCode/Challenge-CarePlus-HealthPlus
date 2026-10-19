@@ -8,7 +8,8 @@ const GruposContext = createContext(null);
 
 export function GruposProvider({ children }) {
   const { perfil } = useUsuario();
-  const { registrar } = useMissoes();
+  const { recarregar: recarregarMissoes } = useMissoes();
+  const { recarregarPerfil } = useUsuario();
   const userId = perfil?.id;
   const [grupos, setGrupos] = useState([]);
   const [grupoId, setGrupoId] = useState(null);
@@ -56,7 +57,8 @@ export function GruposProvider({ children }) {
       if (error) throw error;
       await carregarGrupos();
       setGrupoId(data.id);
-      registrar("next_grupo");
+      recarregarMissoes();
+      recarregarPerfil();
       return { ok: true, codigo: data.codigo };
     } catch (e) {
       return { ok: false, erro: mensagemErro(e) };
@@ -69,7 +71,8 @@ export function GruposProvider({ children }) {
       if (error) throw error;
       await carregarGrupos();
       setGrupoId(data);
-      registrar("next_grupo");
+      recarregarMissoes();
+      recarregarPerfil();
       return { ok: true };
     } catch (e) {
       return { ok: false, erro: mensagemErro(e) };

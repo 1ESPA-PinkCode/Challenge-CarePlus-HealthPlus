@@ -1,13 +1,9 @@
 // app/(tabs)/missoes.jsx
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import MissaoCard from "../../components/MissaoCard";
+import ListaMissoes from "../../components/ListaMissoes";
 import { colors } from "../../constants/colors";
-import { useMissoes } from "../../context/MissoesContext";
-import { useGemas } from "../../contexts/GemsContext";
 
 export default function Missoes() {
-  const { missoes, registrar } = useMissoes();
-  const { addGemas } = useGemas();
 
   return (
     <View style={styles.container}>
@@ -15,26 +11,12 @@ export default function Missoes() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.titulo}>Missões do Dia</Text>
+        <Text style={styles.titulo}>Missões do NEXT</Text>
         <Text style={styles.subtitulo}>
-          Complete suas missões e cultive seu jardim
+          Cada missão vale pontos e um doce surpresa 🍬
         </Text>
 
-        {missoes.map((m) => (
-          <View key={m.id} style={styles.cardWrapper}>
-            <MissaoCard
-              icon={m.icon}
-              titulo={m.titulo}
-              desc={m.desc}
-              atual={m.atual}
-              meta={m.meta}
-              unidade={m.unidade}
-              gemas={m.gemas}
-              feita={m.atual >= m.meta}
-              onRegistrar={() => registrar(m.id, addGemas, 1)}
-            />
-          </View>
-        ))}
+        <ListaMissoes estiloItem={styles.cardWrapper} />
       </ScrollView>
     </View>
   );

@@ -25,6 +25,7 @@ export default function MissaoCard({
   unidade = "",
   gemas = 0,
   feita = false,
+  botao = "Registrar",
   onRegistrar,
 }) {
   const progresso = meta > 0 ? atual / meta : 0;
@@ -55,7 +56,7 @@ export default function MissaoCard({
       {/* rodapé: pílula de gemas + ação */}
       <View style={styles.rodape}>
         <View style={styles.gemaPill}>
-          <Text style={styles.gemaText}> {gemas} gemas</Text>
+          <Text style={styles.gemaText}> {gemas} pts</Text>
           <Image
             source={require("../assets/images/gema.png")}
             style={styles.gema}
@@ -64,10 +65,10 @@ export default function MissaoCard({
         </View>
 
        {feita ? (
-          <Text style={styles.concluida}>Concluída!</Text>
+          <Text style={styles.concluida}>Concluída! 🍬</Text>
         ) : (
           <TouchableOpacity style={styles.btnRegistrar} onPress={onRegistrar} activeOpacity={0.8}>
-            <Text style={styles.btnRegistrarTexto}>Registrar</Text>
+            <Text style={styles.btnRegistrarTexto}>{botao}</Text>
             <Ionicons name="chevron-forward" size={16} color={colors.white} />
           </TouchableOpacity>
         )}

@@ -1,6 +1,6 @@
 // context/MissoesContext.jsx — missões da gincana NEXT (regras e pontos ficam no banco)
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { mensagemErro, supabase } from "../lib/supabase";
 import { useUsuario } from "./UsuarioContext";
 
@@ -12,8 +12,8 @@ export const INSTAGRAM = "@healthplusnext";
 // acao: o que acontece ao tocar no botão da missão
 export const CATALOGO_MISSOES = [
   { id: "qr_renmap",   icon: "qr-code-outline",       titulo: "Caça ao QR code",       desc: "Encontre o QR code no estande do RENMAP e escaneie com a câmera", unidade: "QR code",   acao: "codigo",      botao: "Validar" },
-  { id: "ativacao",    icon: "flash-outline",         titulo: "Bora se ativar!",       desc: "Participe de uma ativação do NEXT e peça o código para a equipe",  unidade: "ativação",  acao: "codigo",      botao: "Validar" },
-  { id: "story",       icon: "logo-instagram",        titulo: "Mostra pro mundo",      desc: `Poste um story marcando a @fiap e o ${INSTAGRAM}`,                  unidade: "story",     acao: "codigo",      botao: "Validar" },
+  { id: "ativacao",    icon: "flash-outline",         titulo: "Bora se ativar!",       desc: "Participe de uma ativação do NEXT e mostre seu código para a equipe", unidade: "ativação", acao: "equipe", botao: "Meu código" },
+  { id: "story",       icon: "logo-instagram",        titulo: "Mostra pro mundo",      desc: `Poste um story marcando a @fiap e o ${INSTAGRAM}`,                  unidade: "story",     acao: "equipe",      botao: "Meu código" },
   { id: "agua",        icon: "water-outline",         titulo: "Hidratação no evento",  desc: "Beba 1 litro de água: 4 copos de 250 ml",                          unidade: "copos",     acao: "registrar",   botao: "+1 copo" },
   { id: "respira",     icon: "leaf-outline",          titulo: "Respira com a Bloom",   desc: "1 minuto de respiração guiada para recarregar",                    unidade: "minuto",    acao: "respira",     botao: "Começar" },
   { id: "alongamento", icon: "body-outline",          titulo: "Alongamento relâmpago", desc: "2 minutos de alongamento guiado, aí mesmo onde você está",         unidade: "sessão",    acao: "alongamento", botao: "Começar" },
@@ -36,16 +36,35 @@ export function MissoesProvider({ children }) {
   const [carregado, setCarregado] = useState(false);
   const [aviso, setAviso] = useState(null); // { titulo, gemas } ao concluir uma missão
   const userId = perfil?.id;
+  const concluidasRef = useRef(null); // null = ainda não carregou (não comemora o que já estava feito)
 
   const carregar = useCallback(async () => {
     if (!userId) {
+      concluidasRef.current = null;
       setMissoes(montar());
       return;
     }
     const { data, error } = await supabase.rpc("minhas_missoes");
-    if (!error) setMissoes(montar(Object.fromEntries((data || []).map((r) => [r.id, r]))));
+    if (!error) {
+      const lista = montar(Object.fromEntries((data || []).map((r) => [r.id, r])));
+      // missões concluídas por outra pessoa (equipe, amigo que entrou no grupo): comemora aqui
+      const novas = lista.filter((m) => m.concluida && concluidasRef.current && !concluidasRef.current.has(m.id));
+      concluidasRef.current = new Set(lista.filter((m) => m.concluida).map((m) => m.id));
+      setMissoes(lista);
+      if (novas.length) {
+        setAviso({ titulo: novas[0].titulo, gemas: novas[0].gemas });
+        recarregarPerfil();
+      }
+    }
     setCarregado(true);
   }, [userId]);
+
+  // confere de tempos em tempos (a equipe pode confirmar missões a qualquer momento)
+  useEffect(() => {
+    if (!userId) return;
+    const t = setInterval(carregar, 20000);
+    return () => clearInterval(t);
+  }, [carregar]);
 
   useEffect(() => {
     carregar();
@@ -59,14 +78,13 @@ export function MissoesProvider({ children }) {
       await AsyncStorage.removeItem("@healthplus:qr_pendente");
       const { data, error } = await supabase.rpc("validar_codigo", { p_missao: "qr_renmap", p_codigo: codigo });
       if (!error && data) {
-        await carregar();
-        setAviso({ titulo: "Caça ao QR code", gemas: 30 });
-        recarregarPerfil();
+        await carregar(); // a comemoração aparece sozinha
       }
     });
   }, [userId]);
 
   function aoConcluir(id) {
+    concluidasRef.current?.add(id);
     const m = missoes.find((x) => x.id === id);
     setMissoes((lista) => lista.map((x) => (x.id === id ? { ...x, atual: x.meta, concluida: true } : x)));
     if (m) setAviso({ titulo: m.titulo, gemas: m.gemas });

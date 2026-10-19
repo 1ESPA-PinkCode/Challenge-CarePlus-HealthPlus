@@ -1,7 +1,7 @@
 // components/ListaMissoes.jsx — lista de missões + ação de cada uma
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,18 +15,24 @@ import {
 } from "react-native";
 import { colors } from "../constants/colors";
 import { INSTAGRAM, useMissoes } from "../context/MissoesContext";
+import { useUsuario } from "../context/UsuarioContext";
 import MissaoCard from "./MissaoCard";
+
+const AJUDA_EQUIPE = {
+  ativacao: "Participe de uma ativação do NEXT e mostre este código para alguém da equipe Health Plus. A missão aparece concluída na hora.",
+  story: `Poste um story marcando a @fiap e o ${INSTAGRAM}. Mostre o story e este código no estande do Health Plus.`,
+};
 
 const AJUDA_CODIGO = {
   qr_renmap: "Vá até o estande do RENMAP, aponte a câmera do celular para o QR code e toque no link. Se preferir, digite o código que aparece embaixo do QR.",
-  ativacao: "Participe de uma ativação do NEXT. No final, peça o código para a equipe Health Plus.",
-  story: `Poste um story marcando a @fiap e o ${INSTAGRAM}. Mostre o story no estande do Health Plus para receber o código.`,
 };
 
 export default function ListaMissoes({ estiloItem, soPendentes = false, limite }) {
   const router = useRouter();
-  const { missoes, registrar, validarCodigo, avaliar } = useMissoes();
+  const { missoes, registrar, validarCodigo, avaliar, recarregar } = useMissoes();
+  const { perfil } = useUsuario();
   const [codigoMissao, setCodigoMissao] = useState(null);
+  const [missaoEquipe, setMissaoEquipe] = useState(null);
   const [avaliando, setAvaliando] = useState(false);
 
   function agir(m) {
@@ -35,6 +41,8 @@ export default function ListaMissoes({ estiloItem, soPendentes = false, limite }
         return registrar(m.id);
       case "codigo":
         return setCodigoMissao(m);
+      case "equipe":
+        return setMissaoEquipe(m);
       case "avaliar":
         return setAvaliando(true);
       case "jardim":
@@ -72,6 +80,12 @@ export default function ListaMissoes({ estiloItem, soPendentes = false, limite }
         missao={codigoMissao}
         onFechar={() => setCodigoMissao(null)}
         onValidar={(c) => validarCodigo(codigoMissao?.id, c)}
+      />
+      <ModalCodigoPessoal
+        missao={missaoEquipe ? missoes.find((x) => x.id === missaoEquipe.id) : null}
+        codigo={perfil?.codigo_pessoal}
+        onFechar={() => setMissaoEquipe(null)}
+        recarregar={recarregar}
       />
       <ModalAvaliar visivel={avaliando} onFechar={() => setAvaliando(false)} onEnviar={avaliar} />
     </>
@@ -141,6 +155,33 @@ function ModalCodigo({ missao, onFechar, onValidar }) {
   );
 }
 
+// Mostra o código pessoal enquanto a equipe confirma (atualiza sozinho)
+function ModalCodigoPessoal({ missao, codigo, onFechar, recarregar }) {
+  useEffect(() => {
+    if (!missao || missao.concluida) return;
+    const t = setInterval(recarregar, 3000);
+    return () => clearInterval(t);
+  }, [missao?.id, missao?.concluida]);
+
+  return (
+    <Caixa visivel={!!missao} onFechar={onFechar} titulo={missao?.titulo || ""}>
+      {missao?.concluida ? (
+        <Text style={[styles.texto, { fontWeight: "800", color: colors.primary }]}>✅ Missão confirmada pela equipe!</Text>
+      ) : (
+        <>
+          <Text style={styles.texto}>{missao ? AJUDA_EQUIPE[missao.id] : ""}</Text>
+          <Text style={styles.label}>Seu código</Text>
+          <Text style={styles.codigoPessoal}>#{codigo || "----"}</Text>
+          <Text style={styles.aguardando}>Esperando a confirmação da equipe…</Text>
+        </>
+      )}
+      <TouchableOpacity style={styles.botao} onPress={onFechar} activeOpacity={0.85}>
+        <Text style={styles.botaoTexto}>{missao?.concluida ? "Fechar" : "Voltar"}</Text>
+      </TouchableOpacity>
+    </Caixa>
+  );
+}
+
 function ModalAvaliar({ visivel, onFechar, onEnviar }) {
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState("");
@@ -193,6 +234,7 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 20, fontWeight: "800", color: colors.primary, flex: 1 },
   texto: { fontSize: 14, color: "#4A4A4A", lineHeight: 20, marginBottom: 14 },
   input: {
+    minWidth: 0,
     borderWidth: 1.5,
     borderColor: colors.green3,
     borderRadius: 12,
@@ -202,6 +244,9 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     marginBottom: 12,
   },
+  label: { textAlign: "center", color: "#8A8A8A", fontWeight: "700" },
+  codigoPessoal: { textAlign: "center", fontSize: 54, fontWeight: "900", color: colors.primary, letterSpacing: 6, marginVertical: 6 },
+  aguardando: { textAlign: "center", color: "#8A8A8A", fontSize: 13, marginBottom: 14 },
   estrelas: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 14 },
   erro: { color: "#C0392B", fontSize: 14, marginBottom: 10, fontWeight: "600" },
   botao: { backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: "center" },

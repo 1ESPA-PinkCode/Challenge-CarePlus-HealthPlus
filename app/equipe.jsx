@@ -19,7 +19,9 @@ export default function Equipe() {
   const [doce, setDoce] = useState(null);
   const [msg, setMsg] = useState("");
   const [ocupado, setOcupado] = useState(false);
-  const [editando, setEditando] = useState({});
+  const [codPessoa, setCodPessoa] = useState("");
+  const [pessoa, setPessoa] = useState(null);
+  const [msgPessoa, setMsgPessoa] = useState("");
 
   const carregar = useCallback(async () => {
     const [r, c] = await Promise.all([supabase.rpc("equipe_resumo"), supabase.rpc("equipe_codigos")]);
@@ -58,12 +60,25 @@ export default function Equipe() {
     carregar();
   }
 
-  async function trocarCodigo(id) {
-    const novo = (editando[id] || "").trim();
-    if (novo.length < 3) return;
-    const { error } = await supabase.rpc("equipe_trocar_codigo", { p_missao: id, p_codigo: novo });
-    if (error) return setMsg(mensagemErro(error));
-    setEditando((e) => ({ ...e, [id]: "" }));
+  async function buscarPessoa() {
+    setMsgPessoa("");
+    setPessoa(null);
+    if (codPessoa.replace("#", "").trim().length < 4) return setMsgPessoa("Digite o código da pessoa (ex.: K7P2).");
+    setOcupado(true);
+    const { data, error } = await supabase.rpc("equipe_buscar_pessoa", { p_codigo: codPessoa });
+    setOcupado(false);
+    if (error) return setMsgPessoa(mensagemErro(error));
+    if (!data?.length) return setMsgPessoa("Ninguém com esse código.");
+    setPessoa(data[0]);
+  }
+
+  async function darMissao(missao) {
+    setOcupado(true);
+    const { error } = await supabase.rpc("equipe_dar_missao", { p_codigo: pessoa?.codigo_pessoal, p_missao: missao });
+    setOcupado(false);
+    if (error) return setMsgPessoa(mensagemErro(error));
+    setMsgPessoa(`✅ ${nomeMissao(missao)} confirmada para ${pessoa?.nome}!`);
+    setPessoa((p) => (p ? { ...p, [missao]: true } : p));
     carregar();
   }
 
@@ -90,7 +105,45 @@ export default function Equipe() {
 
   return (
     <TelaAtividade titulo="Equipe">
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
+        {/* Dar missão (ativação / story) */}
+        <Text style={styles.secao}>⭐ Confirmar ativação ou story</Text>
+        <View style={styles.linhaBusca}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="Código da pessoa (#K7P2)"
+            placeholderTextColor="#A8A8A8"
+            autoCapitalize="characters"
+            value={codPessoa}
+            onChangeText={(t) => {
+              setCodPessoa(t);
+              setMsgPessoa("");
+            }}
+            onSubmitEditing={buscarPessoa}
+          />
+          <TouchableOpacity style={styles.botaoPeq} onPress={buscarPessoa} disabled={ocupado}>
+            <Text style={styles.botaoTexto}>Buscar</Text>
+          </TouchableOpacity>
+        </View>
+        {pessoa && (
+          <View style={styles.card}>
+            <Text style={styles.doceNome}>{pessoa.nome}</Text>
+            {[
+              ["ativacao", "⚡ Participou da ativação"],
+              ["story", "📸 Postou o story"],
+            ].map(([id, label]) =>
+              pessoa[id] ? (
+                <Text key={id} style={styles.texto}>{label}: já confirmado ✓</Text>
+              ) : (
+                <TouchableOpacity key={id} style={styles.botao} onPress={() => darMissao(id)} disabled={ocupado}>
+                  <Text style={styles.botaoTexto}>{label}</Text>
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+        )}
+        {msgPessoa ? <Text style={styles.msg}>{msgPessoa}</Text> : null}
+
         {/* Entregar doce */}
         <Text style={styles.secao}>🍬 Entregar doce</Text>
         <View style={styles.linhaBusca}>
@@ -125,27 +178,11 @@ export default function Equipe() {
         )}
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
 
-        {/* Códigos */}
-        <Text style={styles.secao}>🔑 Códigos das missões</Text>
+        {/* Código do QR */}
         {codigos.map((c) => (
           <View key={c.id} style={styles.card}>
-            <Text style={styles.texto}>{nomeMissao(c.id)}</Text>
+            <Text style={styles.texto}>Código impresso no QR do RENMAP</Text>
             <Text style={styles.codigo}>{c.codigo}</Text>
-            {c.id !== "qr_renmap" && (
-              <View style={styles.linhaBusca}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="Novo código"
-                  placeholderTextColor="#A8A8A8"
-                  autoCapitalize="characters"
-                  value={editando[c.id] || ""}
-                  onChangeText={(t) => setEditando((e) => ({ ...e, [c.id]: t }))}
-                />
-                <TouchableOpacity style={styles.botaoPeq} onPress={() => trocarCodigo(c.id)}>
-                  <Text style={styles.botaoTexto}>Trocar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </View>
         ))}
 
@@ -184,6 +221,7 @@ const styles = StyleSheet.create({
   secao: { fontSize: 18, fontWeight: "900", color: colors.primary, marginTop: 8, marginBottom: 10 },
   linhaBusca: { flexDirection: "row", gap: 8, alignItems: "center" },
   input: {
+    minWidth: 0,
     borderWidth: 1.5,
     borderColor: colors.green3,
     borderRadius: 12,

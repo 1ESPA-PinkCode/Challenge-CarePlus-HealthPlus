@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   abaTextoAtivo: { color: colors.white },
   subtitulo: { fontSize: 13, color: "#6A6A6A", marginBottom: 12 },
   input: {
+    minWidth: 0,
     borderWidth: 1.5,
     borderColor: colors.green3,
     borderRadius: 12,

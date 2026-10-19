@@ -167,9 +167,10 @@ const styles = StyleSheet.create({
   tituloText: { color: colors.white, fontSize: 22, fontWeight: "800" },
 
   cenaBox: {
+    width: CENA_W,
     height: CENA_H,
+    alignSelf: "center",
     position: "relative",
-    alignItems: "center",
   },
   plantada: {
     position: "absolute",

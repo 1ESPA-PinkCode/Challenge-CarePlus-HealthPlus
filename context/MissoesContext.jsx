@@ -5,12 +5,14 @@ import { useUsuario } from "./UsuarioContext";
 
 const MissoesContext = createContext(null);
 
-// Catálogo das missões diárias (o progresso de cada dia fica no banco)
+// Catálogo de missões — edição especial NEXT FIAP (o progresso de cada dia fica no banco)
 export const CATALOGO_MISSOES = [
-  { id: "meditacao",  icon: "leaf-outline",    titulo: "Meditação Matinal!", desc: "Pratique 10 minutos de meditação", meta: 10, passo: 5,  unidade: "min",   gemas: 30 },
-  { id: "sono",       icon: "moon-outline",    titulo: "Sono Reparador",     desc: "Durma 8 horas essa noite",        meta: 8,  passo: 1,  unidade: "horas", gemas: 10 },
-  { id: "hidratacao", icon: "water-outline",   titulo: "Hidratação",         desc: "Beba 8 copos de água",            meta: 8,  passo: 1,  unidade: "copos", gemas: 15 },
-  { id: "exercicio",  icon: "barbell-outline", titulo: "Exercício Físico",   desc: "Faça 30 minutos de atividade",    meta: 30, passo: 10, unidade: "min",   gemas: 20 },
+  { id: "next_estande",  icon: "storefront-outline", titulo: "Visite o Health Plus!",   desc: "Passe no nosso estande e conheça o projeto",          meta: 1, passo: 1, unidade: "visita",     gemas: 20 },
+  { id: "next_ativacao", icon: "flash-outline",      titulo: "Bora se ativar!",         desc: "Participe de uma ativação do NEXT",                 meta: 1, passo: 1, unidade: "ativação",   gemas: 30 },
+  { id: "next_story",    icon: "logo-instagram",     titulo: "Mostra pro mundo",        desc: "Poste um story marcando a FIAP e o Health Plus",    meta: 1, passo: 1, unidade: "story",      gemas: 40 },
+  { id: "next_projetos", icon: "rocket-outline",     titulo: "Explorador do NEXT",      desc: "Conheça 3 projetos de outros alunos",               meta: 3, passo: 1, unidade: "projetos",   gemas: 25 },
+  { id: "next_agua",     icon: "water-outline",      titulo: "Hidratação no evento",    desc: "Beba 3 copos de água durante o NEXT",               meta: 3, passo: 1, unidade: "copos",      gemas: 15 },
+  { id: "next_grupo",    icon: "people-outline",     titulo: "Junte a galera",          desc: "Crie ou entre em um grupo com seus amigos",         meta: 1, passo: 1, unidade: "grupo",      gemas: 20 },
 ];
 
 function hojeSP() {

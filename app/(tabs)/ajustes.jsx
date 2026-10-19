@@ -143,6 +143,12 @@ export default function Ajustes() {
     { icone: "options-outline", label: "Preferências", onPress: () => setModalPrefs(true) },
     { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => setModalResumo(true) },
     { icone: "gift-outline", label: "Meus doces", onPress: () => router.push("/recompensas") },
+    ...(usuario?.equipe
+      ? [
+          { icone: "shield-checkmark-outline", label: "Painel da equipe", onPress: () => router.push("/equipe") },
+          { icone: "tv-outline", label: "Telão do ranking", onPress: () => router.push("/telao") },
+        ]
+      : []),
   ];
 
   return (

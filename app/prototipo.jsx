@@ -17,6 +17,7 @@ const ESTAGIOS = [
 export default function Prototipo() {
   const [alvo, setAlvo] = useState(0.2);
   const [festa, setFesta] = useState(0);
+  const [tipo, setTipo] = useState("girassol");
 
   function concluirMissao() {
     setAlvo((a) => Math.min(1, +(a + 0.2).toFixed(2)));
@@ -26,9 +27,16 @@ export default function Prototipo() {
   return (
     <TelaAtividade titulo="Protótipo das flores">
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+        <View style={styles.estagios}>
+          {[["girassol", "Girassol"], ["margarida", "Margarida"], ["tulipa", "Tulipa"], ["rosa", "Rosa"]].map(([id, nome]) => (
+            <TouchableOpacity key={id} style={[styles.chip, tipo === id && styles.chipAtivo]} onPress={() => setTipo(id)}>
+              <Text style={[styles.chipTexto, tipo === id && { color: colors.white }]}>{nome}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         <Text style={styles.titulo}>Nova flor ✨</Text>
         <View style={styles.cardNovo}>
-          <FlorNova target={alvo} celebrar={festa} size={300} />
+          <FlorNova tipo={tipo} target={alvo} celebrar={festa} size={300} showScenery />
         </View>
 
         <TouchableOpacity style={styles.botaoFesta} onPress={concluirMissao}>
@@ -45,7 +53,7 @@ export default function Prototipo() {
 
         <Text style={styles.titulo}>Flor atual</Text>
         <View style={styles.cardAtual}>
-          <FlorAnimada tipo="girassol" target={alvo} showLabel={false} size={240} />
+          <FlorAnimada tipo={tipo} target={alvo} showLabel={false} size={240} />
         </View>
       </ScrollView>
     </TelaAtividade>

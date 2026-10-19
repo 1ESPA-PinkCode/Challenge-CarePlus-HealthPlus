@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Flor from "../components/Flor";
+import FlorVisual from "../components/FlorVisual";
 import CenaJardim from "../components/CenaJardim";
 import BarraProgresso from "../components/BarraProgresso";
 import TituloSecao from "../components/TituloSecao";
@@ -59,14 +59,7 @@ export default function Jardim() {
               },
             ]}
           >
-            <Flor
-              tipo={t}
-              missionsCompleted={40}
-              totalMissions={40}
-              showLabel={false}
-              showScenery={false}
-              size={florSize}
-            />
+            <FlorVisual tipo={t} target={1} size={florSize} canteiro={false} />
           </View>
         ))}
       </View>
@@ -107,14 +100,7 @@ export default function Jardim() {
               onPress={onPress}
             >
               <View style={[styles.florArea, bloqueada && { opacity: 0.3 }]}>
-                <Flor
-                  tipo={tipo}
-                  missionsCompleted={40}
-                  totalMissions={40}
-                  showLabel={false}
-                  showScenery={false}
-                  size={70}
-                />
+                <FlorVisual tipo={tipo} target={1} size={70} animar={false} canteiro={false} />
               </View>
 
               {bloqueada && (

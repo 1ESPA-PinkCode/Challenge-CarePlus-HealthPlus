@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import BarraProgresso from "../../components/BarraProgresso";
-import FlorAnimada from "../../components/FlorAnimada";
+import FlorVisual from "../../components/FlorVisual";
 import Greeting from "../../components/Greeting";
 import ListaMissoes from "../../components/ListaMissoes";
 import TituloSecao from "../../components/TituloSecao";
@@ -54,18 +54,18 @@ export default function Inicio() {
       {/* Card da flor */}
       <View style={styles.florCard}>
         <Text style={styles.florTitulo}>
-          {florNome} florid{florFem ? "a" : "o"}
+          {progresso >= 1
+            ? `${florNome} florid${florFem ? "a" : "o"}! 🌸`
+            : progresso >= 0.6
+            ? `${florFem ? "Sua" : "Seu"} ${florNome.toLowerCase()} está quase abrindo`
+            : progresso > 0
+            ? `${florFem ? "Sua" : "Seu"} ${florNome.toLowerCase()} está crescendo`
+            : "Plante sua sementinha"}
         </Text>
         <Text style={styles.florSubtitulo}>Sua jornada de autocuidado</Text>
 
         <View style={styles.cena}>
-          <FlorAnimada
-            tipo={florAtual}
-            target={progresso}
-            duration={1800}
-            showLabel={false}
-            size={230}
-          />
+          <FlorVisual tipo={florAtual} target={progresso} size={250} celebrar={concluidas} />
         </View>
 
         <Text style={styles.progressoTitulo}>

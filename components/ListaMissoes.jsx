@@ -71,7 +71,7 @@ export default function ListaMissoes({ estiloItem, soPendentes = false, limite }
       <ModalCodigo
         missao={codigoMissao}
         onFechar={() => setCodigoMissao(null)}
-        onValidar={(c) => validarCodigo(codigoMissao.id, c)}
+        onValidar={(c) => validarCodigo(codigoMissao?.id, c)}
       />
       <ModalAvaliar visivel={avaliando} onFechar={() => setAvaliando(false)} onEnviar={avaliar} />
     </>

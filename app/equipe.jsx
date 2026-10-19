@@ -49,7 +49,7 @@ export default function Equipe() {
 
   async function entregar() {
     setOcupado(true);
-    const { data, error } = await supabase.rpc("equipe_entregar_doce", { p_codigo: doce.codigo });
+    const { data, error } = await supabase.rpc("equipe_entregar_doce", { p_codigo: doce?.codigo });
     setOcupado(false);
     if (error) return setMsg(mensagemErro(error));
     setMsg(data ? "✅ Doce entregue!" : "Esse cupom já tinha sido usado.");

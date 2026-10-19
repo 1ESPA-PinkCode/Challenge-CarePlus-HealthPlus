@@ -1,8 +1,8 @@
-// components/ModalAddMembro.jsx
+// components/ModalAddMembro.jsx — entrar num grupo pelo código ou criar um novo
 import { Ionicons } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -14,95 +14,95 @@ import {
 } from "react-native";
 import { colors } from "../constants/colors";
 
-export default function ModalAddMembro({ visivel, onFechar, onAdicionar, codigoConvite }) {
-  const [nome, setNome] = useState("");
+export default function ModalAddMembro({ visivel, onFechar, onEntrar, onCriar, codigoInicial }) {
+  const [modo, setModo] = useState("entrar"); // "entrar" | "criar"
+  const [valor, setValor] = useState("");
   const [erro, setErro] = useState("");
-  const [copiado, setCopiado] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
-  const link = `healthplus.app/grupo/${codigoConvite}`;
-
-  function limpar() {
-    setNome("");
-    setErro("");
-    setCopiado(false);
-  }
-
-  async function copiarLink() {
-    await Clipboard.setStringAsync(link);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  }
-
-  function handleSalvar() {
-    const resultado = onAdicionar(nome);
-    if (resultado.ok) {
-      limpar();
-      onFechar();
-    } else {
-      setErro(resultado.erro);
+  useEffect(() => {
+    if (visivel && codigoInicial) {
+      setModo("entrar");
+      setValor(codigoInicial);
     }
-  }
+  }, [visivel, codigoInicial]);
 
-  function handleFechar() {
-    limpar();
+  function fechar() {
+    setValor("");
+    setErro("");
+    setCarregando(false);
     onFechar();
   }
 
+  async function confirmar() {
+    const texto = valor.trim();
+    if (modo === "entrar" && texto.length < 5) return setErro("Digite o código de convite (ex.: PINK-7K2F).");
+    if (modo === "criar" && texto.length < 2) return setErro("Dê um nome para o grupo.");
+    setCarregando(true);
+    const r = modo === "entrar" ? await onEntrar(texto) : await onCriar(texto);
+    setCarregando(false);
+    if (r.ok) fechar();
+    else setErro(r.erro);
+  }
+
   return (
-    <Modal visible={visivel} transparent animationType="fade" onRequestClose={handleFechar}>
+    <Modal visible={visivel} transparent animationType="fade" onRequestClose={fechar}>
       <View style={styles.overlay}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View style={styles.card}>
             <View style={styles.topo}>
-              <Text style={styles.titulo}>Convidar para o grupo</Text>
-              <TouchableOpacity onPress={handleFechar}>
+              <Text style={styles.titulo}>{modo === "entrar" ? "Entrar em um grupo" : "Criar grupo"}</Text>
+              <TouchableOpacity onPress={fechar}>
                 <Ionicons name="close" size={26} color={colors.primary} />
               </TouchableOpacity>
             </View>
 
+            <View style={styles.abas}>
+              {[
+                ["entrar", "Tenho um código"],
+                ["criar", "Criar novo"],
+              ].map(([id, label]) => (
+                <TouchableOpacity
+                  key={id}
+                  style={[styles.aba, modo === id && styles.abaAtiva]}
+                  onPress={() => {
+                    setModo(id);
+                    setValor("");
+                    setErro("");
+                  }}
+                >
+                  <Text style={[styles.abaTexto, modo === id && styles.abaTextoAtivo]}>{label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <Text style={styles.subtitulo}>
-              Compartilhe o link de convite com seus amigos do CarePlus.
+              {modo === "entrar"
+                ? "Peça o código para quem criou o grupo e digite abaixo."
+                : "Depois de criar, compartilhe o código com seus amigos do CarePlus."}
             </Text>
 
-            {/* link de convite */}
-            <View style={styles.linkBox}>
-              <Text style={styles.linkTexto} numberOfLines={1}>{link}</Text>
-            </View>
-
-            <TouchableOpacity style={styles.btnCopiar} onPress={copiarLink} activeOpacity={0.85}>
-              <Ionicons
-                name={copiado ? "checkmark" : "copy-outline"}
-                size={18}
-                color={colors.white}
-              />
-              <Text style={styles.btnCopiarTexto}>
-                {copiado ? "Link copiado!" : "Copiar link de convite"}
-              </Text>
-            </TouchableOpacity>
-
-            {/* divisória */}
-            <View style={styles.divisor}>
-              <View style={styles.linha} />
-              <Text style={styles.divisorTexto}>ou adicione direto</Text>
-              <View style={styles.linha} />
-            </View>
-
-            <Text style={styles.label}>Nome</Text>
             <TextInput
               style={styles.input}
-              placeholder="Nome da pessoa"
+              placeholder={modo === "entrar" ? "PINK-7K2F" : "Nome do grupo"}
               placeholderTextColor="#A8A8A8"
-              value={nome}
+              autoCapitalize={modo === "entrar" ? "characters" : "words"}
+              value={valor}
               onChangeText={(t) => {
-                setNome(t);
+                setValor(t);
                 setErro("");
               }}
+              onSubmitEditing={confirmar}
             />
 
             {erro ? <Text style={styles.erro}>{erro}</Text> : null}
 
-            <TouchableOpacity style={styles.botao} onPress={handleSalvar} activeOpacity={0.85}>
-              <Text style={styles.botaoTexto}>Adicionar ao grupo</Text>
+            <TouchableOpacity style={styles.botao} onPress={confirmar} activeOpacity={0.85} disabled={carregando}>
+              {carregando ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.botaoTexto}>{modo === "entrar" ? "Entrar no grupo" : "Criar grupo"}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -112,56 +112,16 @@ export default function ModalAddMembro({ visivel, onFechar, onAdicionar, codigoC
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 22,
-    padding: 22,
-  },
-  topo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", paddingHorizontal: 24 },
+  card: { backgroundColor: colors.white, borderRadius: 22, padding: 22 },
+  topo: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
   titulo: { fontSize: 20, fontWeight: "800", color: colors.primary },
-  subtitulo: { fontSize: 13, color: "#6A6A6A", marginBottom: 16 },
-
-  linkBox: {
-    backgroundColor: "#EAF3DC",
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  linkTexto: { fontSize: 15, fontWeight: "700", color: colors.primary },
-
-  btnCopiar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 13,
-  },
-  btnCopiarTexto: { color: colors.white, fontSize: 15, fontWeight: "800" },
-
-  divisor: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginVertical: 18,
-  },
-  linha: { flex: 1, height: 1, backgroundColor: colors.green3 },
-  divisorTexto: { fontSize: 13, color: "#9AA98C", fontWeight: "600" },
-
-  label: { fontSize: 14, fontWeight: "700", color: colors.primary, marginBottom: 6 },
+  abas: { flexDirection: "row", backgroundColor: "#EAF3DC", borderRadius: 12, padding: 4, marginBottom: 14 },
+  aba: { flex: 1, paddingVertical: 10, borderRadius: 9, alignItems: "center" },
+  abaAtiva: { backgroundColor: colors.primary },
+  abaTexto: { fontWeight: "700", color: colors.primary, fontSize: 14 },
+  abaTextoAtivo: { color: colors.white },
+  subtitulo: { fontSize: 13, color: "#6A6A6A", marginBottom: 12 },
   input: {
     borderWidth: 1.5,
     borderColor: colors.green3,
@@ -173,12 +133,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   erro: { color: "#C0392B", fontSize: 14, marginBottom: 10, fontWeight: "600" },
-  botao: {
-    backgroundColor: colors.primary,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 2,
-  },
+  botao: { backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
   botaoTexto: { color: colors.white, fontSize: 16, fontWeight: "800" },
 });

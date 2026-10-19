@@ -15,6 +15,8 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../constants/colors";
+import { useUsuario } from "../../context/UsuarioContext";
+import { mensagemErro } from "../../lib/supabase";
 
 const { width } = Dimensions.get("window");
 
@@ -56,6 +58,7 @@ export default function Cadastro() {
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const { cadastrar } = useUsuario();
 
   function handleCPF(texto) {
     setCpf(formatarCPF(texto));
@@ -86,21 +89,10 @@ export default function Cadastro() {
     setErro("");
 
     try {
-      const response = await fetch("https://health-plus-api.onrender.com/cadastro", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nome.trim(), cpf: cpfLimpo, senha }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        router.replace("/auth/login");
-      } else {
-        setErro(data.erro || "Erro ao criar conta. Tente novamente.");
-      }
+      const logado = await cadastrar(nome.trim(), cpfLimpo, senha);
+      router.replace(logado ? "/(tabs)" : "/auth/login");
     } catch (e) {
-      setErro("Erro de conexão. Verifique sua internet.");
+      setErro(mensagemErro(e));
     } finally {
       setLoading(false);
     }

@@ -1,61 +1,77 @@
-// context/MissoesContext.jsx
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useContext, useEffect, useState } from "react";
+// context/MissoesContext.jsx — missões do dia, salvas no banco
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useUsuario } from "./UsuarioContext";
 
 const MissoesContext = createContext(null);
 
-const MISSOES_INICIAIS = [
-  { id: "meditacao",  icon: "leaf-outline",    titulo: "Meditação Matinal!", desc: "Pratique 10 minutos de meditação", atual: 0, meta: 10, unidade: "min",    gemas: 30 },
-  { id: "sono",       icon: "moon-outline",    titulo: "Sono Reparador",     desc: "Durma 8 horas essa noite",        atual: 0, meta: 8,  unidade: "horas",  gemas: 10 },
-  { id: "hidratacao", icon: "water-outline",   titulo: "Hidratação",         desc: "Beba 8 copos de água",            atual: 0, meta: 8,  unidade: "copos",  gemas: 15 },
-  { id: "exercicio",  icon: "barbell-outline", titulo: "Exercício Físico",   desc: "Faça 30 minutos de atividade",    atual: 0, meta: 30, unidade: "min",    gemas: 20 },
+// Catálogo das missões diárias (o progresso de cada dia fica no banco)
+export const CATALOGO_MISSOES = [
+  { id: "meditacao",  icon: "leaf-outline",    titulo: "Meditação Matinal!", desc: "Pratique 10 minutos de meditação", meta: 10, passo: 5,  unidade: "min",   gemas: 30 },
+  { id: "sono",       icon: "moon-outline",    titulo: "Sono Reparador",     desc: "Durma 8 horas essa noite",        meta: 8,  passo: 1,  unidade: "horas", gemas: 10 },
+  { id: "hidratacao", icon: "water-outline",   titulo: "Hidratação",         desc: "Beba 8 copos de água",            meta: 8,  passo: 1,  unidade: "copos", gemas: 15 },
+  { id: "exercicio",  icon: "barbell-outline", titulo: "Exercício Físico",   desc: "Faça 30 minutos de atividade",    meta: 30, passo: 10, unidade: "min",   gemas: 20 },
 ];
 
-const STORAGE_KEY = "@healthplus:missoes_v1";
+function hojeSP() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }); // AAAA-MM-DD
+}
+
+const vazias = () => CATALOGO_MISSOES.map((m) => ({ ...m, atual: 0 }));
 
 export function MissoesProvider({ children }) {
-  const [missoes, setMissoes] = useState(MISSOES_INICIAIS);
+  const { perfil, recarregarPerfil } = useUsuario();
+  const [missoes, setMissoes] = useState(vazias);
   const [carregado, setCarregado] = useState(false);
+  const userId = perfil?.id;
+
+  const carregar = useCallback(async () => {
+    if (!userId) {
+      setMissoes(vazias());
+      return;
+    }
+    const { data, error } = await supabase
+      .from("missoes_dia")
+      .select("missao_id, atual")
+      .eq("usuario_id", userId)
+      .eq("dia", hojeSP());
+    if (!error) {
+      const mapa = Object.fromEntries((data || []).map((r) => [r.missao_id, r.atual]));
+      setMissoes(CATALOGO_MISSOES.map((m) => ({ ...m, atual: mapa[m.id] || 0 })));
+    }
+    setCarregado(true);
+  }, [userId]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const salvo = await AsyncStorage.getItem(STORAGE_KEY);
-        if (salvo) {
-          const dados = JSON.parse(salvo);
-          if (dados.missoes) setMissoes(dados.missoes);
-        }
-      } catch (e) {
-        console.log("Erro ao carregar missões:", e);
-      } finally {
-        setCarregado(true);
-      }
-    })();
-  }, []);
+    carregar();
+  }, [carregar]);
 
-  useEffect(() => {
-    if (!carregado) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ missoes })).catch((e) =>
-      console.log("Erro ao salvar missões:", e)
-    );
-  }, [missoes, carregado]);
+  // passo: quanto avançar. Se não vier, usa o passo padrão da missão.
+  async function registrar(id, onConcluir, passo) {
+    const m = missoes.find((x) => x.id === id);
+    if (!m || m.atual >= m.meta) return;
+    const incremento = Math.max(passo || 1, m.passo || 1);
 
-  const registrar = (id, onConcluir, passo = 1) => {
-    setMissoes((lista) =>
-      lista.map((m) => {
-        if (m.id !== id) return m;
-        const jaConcluida = m.atual >= m.meta;
-        const novoAtual = Math.min(m.meta, m.atual + passo);
-        if (!jaConcluida && novoAtual >= m.meta && typeof onConcluir === "function") {
-          onConcluir(m.gemas);
-        }
-        return { ...m, atual: novoAtual };
-      })
-    );
-  };
+    // atualiza a tela na hora; o banco confirma em seguida
+    setMissoes((lista) => lista.map((x) => (x.id === id ? { ...x, atual: Math.min(x.meta, x.atual + incremento) } : x)));
 
-  const resetarMissoes = () =>
-    setMissoes((lista) => lista.map((m) => ({ ...m, atual: 0 })));
+    const { data, error } = await supabase.rpc("registrar_missao", {
+      p_missao: id,
+      p_passo: incremento,
+      p_meta: m.meta,
+      p_gemas: m.gemas,
+    });
+    if (error) {
+      console.log("Erro ao registrar missão:", error.message);
+      carregar();
+      return;
+    }
+    setMissoes((lista) => lista.map((x) => (x.id === id ? { ...x, atual: data.atual } : x)));
+    if (data.concluiu_agora) {
+      if (typeof onConcluir === "function") onConcluir(m.gemas);
+      recarregarPerfil();
+    }
+  }
 
   const totalMissoes = missoes.length;
   const concluidas = missoes.filter((m) => m.atual >= m.meta).length;
@@ -63,15 +79,7 @@ export function MissoesProvider({ children }) {
 
   return (
     <MissoesContext.Provider
-      value={{
-        missoes,
-        registrar,
-        resetarMissoes,
-        concluidas,
-        totalMissoes,
-        crescimentoFlor,
-        carregado,
-      }}
+      value={{ missoes, registrar, recarregar: carregar, concluidas, totalMissoes, crescimentoFlor, carregado }}
     >
       {children}
     </MissoesContext.Provider>

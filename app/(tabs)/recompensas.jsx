@@ -17,9 +17,8 @@ import { useGemas } from "../../contexts/GemsContext";
 export default function Recompensas() {
   const {
     gemas,
-    removeGemas,
+    resgatar,
     redeemedRewards,
-    addRedeemedReward,
   } = useGemas();
   const { section } = useLocalSearchParams();
   const scrollRef = useRef(null);
@@ -65,17 +64,6 @@ export default function Recompensas() {
     },
   ];
 
-  function generateCoupon() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let coupon = "";
-
-    for (let i = 0; i < 10; i++) {
-      coupon += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return coupon;
-  }
-
   const rewardsWithStatus = rewards.map((reward) => ({
     ...reward,
     locked: gemas < reward.points,
@@ -97,7 +85,7 @@ export default function Recompensas() {
     }
   }, [section, redeemedRewards]);
 
-  function openModal(reward) {
+  async function openModal(reward) {
     setSelectedReward(reward);
     setCopied(false);
     setIsErrorModal(false);
@@ -114,16 +102,8 @@ export default function Recompensas() {
 
     if (!reward.locked) {
       try {
-        const coupon = generateCoupon();
-
-        if (!coupon) {
-          throw new Error("Erro ao gerar cupom");
-        }
-
+        const coupon = await resgatar(reward.title, reward.points);
         setGeneratedCoupon(coupon);
-        removeGemas(reward.points);
-
-       addRedeemedReward(reward.title, coupon);
       } catch (error) {
         setIsErrorModal(true);
       }

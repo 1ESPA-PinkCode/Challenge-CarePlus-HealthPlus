@@ -1,73 +1,44 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// contexts/GemsContext.jsx — saldo de gemas e resgates, vindos do banco
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useUsuario } from "../context/UsuarioContext";
+import { supabase } from "../lib/supabase";
 
-const GemsContext = createContext();
+const GemsContext = createContext(null);
 
 export function GemsProvider({ children }) {
-  const [gemas, setGemas] = useState(0);
+  const { perfil, recarregarPerfil } = useUsuario();
   const [redeemedRewards, setRedeemedRewards] = useState({});
-  const [loaded, setLoaded] = useState(false);
+  const userId = perfil?.id;
 
-  useEffect(() => {
-    async function carregarDados() {
-      try {
-        const gemasSalvas = await AsyncStorage.getItem("@gemas");
-        const resgatesSalvos = await AsyncStorage.getItem("@resgates");
-
-        if (gemasSalvas !== null) {
-          setGemas(Number(gemasSalvas));
-        }
-
-        if (resgatesSalvos !== null) {
-          setRedeemedRewards(JSON.parse(resgatesSalvos));
-        }
-      } catch (error) {
-        console.log("Erro ao carregar dados:", error);
-      } finally {
-        setLoaded(true);
-      }
+  const carregarResgates = useCallback(async () => {
+    if (!userId) {
+      setRedeemedRewards({});
+      return;
     }
-
-    carregarDados();
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-
-    AsyncStorage.setItem("@gemas", String(gemas));
-  }, [gemas, loaded]);
+    const { data } = await supabase.from("resgates").select("titulo, cupom").eq("usuario_id", userId);
+    setRedeemedRewards(Object.fromEntries((data || []).map((r) => [r.titulo, r.cupom])));
+  }, [userId]);
 
   useEffect(() => {
-    if (!loaded) return;
+    carregarResgates();
+  }, [carregarResgates]);
 
-    AsyncStorage.setItem("@resgates", JSON.stringify(redeemedRewards));
-  }, [redeemedRewards, loaded]);
-
-  function addGemas(quantidade) {
-    setGemas((valorAtual) => valorAtual + quantidade);
+  // As gemas são somadas pelo banco ao concluir missões; aqui só atualizamos o saldo.
+  function addGemas() {
+    recarregarPerfil();
   }
 
-  function removeGemas(quantidade) {
-    setGemas((valorAtual) => Math.max(valorAtual - quantidade, 0));
-  }
-
-  function addRedeemedReward(title, coupon) {
-    setRedeemedRewards((currentRewards) => ({
-      ...currentRewards,
-      [title]: coupon,
-    }));
+  // Resgata no banco (confere saldo e gera o cupom). Retorna o cupom.
+  async function resgatar(titulo, custo) {
+    const { data, error } = await supabase.rpc("resgatar", { p_titulo: titulo, p_custo: custo });
+    if (error) throw error;
+    setRedeemedRewards((atual) => ({ ...atual, [titulo]: data }));
+    recarregarPerfil();
+    return data;
   }
 
   return (
-    <GemsContext.Provider
-      value={{
-        gemas,
-        addGemas,
-        removeGemas,
-        redeemedRewards,
-        addRedeemedReward,
-      }}
-    >
+    <GemsContext.Provider value={{ gemas: perfil?.gemas ?? 0, addGemas, resgatar, redeemedRewards }}>
       {children}
     </GemsContext.Provider>
   );

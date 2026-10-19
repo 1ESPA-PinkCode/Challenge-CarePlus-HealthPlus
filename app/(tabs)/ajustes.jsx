@@ -1,6 +1,6 @@
 // app/(tabs)/ajustes.jsx
 import { useMissoes } from "../../context/MissoesContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import { colors } from "../../constants/colors";
 
 export default function Ajustes() {
   const router = useRouter();
-  const { usuario, salvarUsuario, logout } = useUsuario();
+  const { usuario, salvarUsuario, mudarSenha, logout } = useUsuario();
   const { missoes, concluidas, totalMissoes } = useMissoes();
   const [modalResumo, setModalResumo] = useState(false);
   const gemasHoje = missoes
@@ -29,6 +29,7 @@ export default function Ajustes() {
     .reduce((acc, m) => acc + m.gemas, 0);
 
   const [foto, setFoto] = useState(usuario?.foto || null);
+  useEffect(() => { setFoto(usuario?.foto || null); setNovoNome(usuario?.nome || ""); }, [usuario?.foto, usuario?.nome]);
 
   // Modal Editar Perfil
   const [modalPerfil, setModalPerfil] = useState(false);
@@ -61,10 +62,13 @@ export default function Ajustes() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.3,
+      base64: true,
     });
     if (!resultado.canceled) {
-      const novaFoto = resultado.assets[0].uri;
+      const asset = resultado.assets[0];
+      // guarda a foto pequena no banco para aparecer em qualquer aparelho
+      const novaFoto = asset.base64 ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}` : asset.uri;
       setFoto(novaFoto);
       await salvarUsuario({ ...usuario, foto: novaFoto });
     }
@@ -78,20 +82,10 @@ export default function Ajustes() {
     setLoadingPerfil(true);
     setErroPerfil("");
     try {
-      const response = await fetch(`https://health-plus-api.onrender.com/usuario/${usuario.cpf}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: novoNome }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        await salvarUsuario({ ...usuario, nome: novoNome });
-        setModalPerfil(false);
-      } else {
-        setErroPerfil(data.erro || "Erro ao atualizar.");
-      }
+      await salvarUsuario({ nome: novoNome.trim() });
+      setModalPerfil(false);
     } catch (e) {
-      setErroPerfil("Erro de conexão.");
+      setErroPerfil("Erro ao atualizar. Tente novamente.");
     } finally {
       setLoadingPerfil(false);
     }
@@ -109,26 +103,17 @@ export default function Ajustes() {
     setLoadingSenha(true);
     setErroSenha("");
     try {
-      const response = await fetch(`https://health-plus-api.onrender.com/usuario/${usuario.cpf}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senha: novaSenha }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setSucessoSenha("Senha atualizada com sucesso! 🌱");
-        setTimeout(() => {
-          setModalSenha(false);
-          setSenhaAtual("");
-          setNovaSenha("");
-          setConfirmarSenha("");
-          setSucessoSenha("");
-        }, 2000);
-      } else {
-        setErroSenha(data.erro || "Erro ao atualizar.");
-      }
+      await mudarSenha(novaSenha);
+      setSucessoSenha("Senha atualizada com sucesso! 🌱");
+      setTimeout(() => {
+        setModalSenha(false);
+        setSenhaAtual("");
+        setNovaSenha("");
+        setConfirmarSenha("");
+        setSucessoSenha("");
+      }, 2000);
     } catch (e) {
-      setErroSenha("Erro de conexão.");
+      setErroSenha("Erro ao atualizar a senha.");
     } finally {
       setLoadingSenha(false);
     }
@@ -178,11 +163,6 @@ export default function Ajustes() {
           </View>
         </TouchableOpacity>
         <Text style={styles.nome}>{usuario?.nome || "Usuário"}</Text>
-        <Text style={styles.cpf}>
-          {usuario?.cpf
-            ? usuario.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-            : ""}
-        </Text>
       </View>
 
       {/* Menu de opções */}

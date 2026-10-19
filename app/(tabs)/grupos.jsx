@@ -1,7 +1,9 @@
 // app/(tabs)/grupos.jsx
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ModalAddMembro from "../../components/ModalAddMembro";
 import { colors } from "../../constants/colors";
 import { useGrupos } from "../../context/GruposContext";
@@ -34,75 +36,122 @@ function LinhaRanking({ posicao, nome, detalhe, ultima }) {
 }
 
 export default function Grupos() {
-  const { membros, rankingMissoes, rankingVitorias, adicionarMembro, codigoConvite } = useGrupos();
+  const {
+    grupos, grupoAtual, selecionarGrupo, membros, rankingMissoes, rankingStreak,
+    criarGrupo, entrarGrupo, recarregar, meuId,
+  } = useGrupos();
+  const { convite } = useLocalSearchParams();
   const [modalVisivel, setModalVisivel] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
-  const vazio = membros.length === 0;
+  // link de convite: abrir healthplus/grupos?convite=CODIGO já abre o modal preenchido
+  useEffect(() => {
+    if (convite) setModalVisivel(true);
+  }, [convite]);
+
+  useFocusEffect(
+    useCallback(() => {
+      recarregar();
+    }, [grupoAtual?.id])
+  );
+
+  async function copiarConvite() {
+    if (!grupoAtual) return;
+    const base = Platform.OS === "web" && typeof window !== "undefined" ? window.location.origin : "";
+    const texto = base
+      ? `Entre no meu grupo "${grupoAtual.nome}" no Health Plus: ${base}/grupos?convite=${grupoAtual.codigo}`
+      : grupoAtual.codigo;
+    await Clipboard.setStringAsync(texto);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  }
+
+  const semGrupo = grupos.length === 0;
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* título */}
         <View style={styles.tituloBox}>
           <Text style={styles.tituloTexto}>Seus Grupos</Text>
         </View>
 
-        {vazio ? (
+        {semGrupo ? (
           <View style={styles.vazioBox}>
             <Ionicons name="people-outline" size={48} color={colors.green3} />
-            <Text style={styles.vazioTitulo}>Nenhum membro ainda</Text>
+            <Text style={styles.vazioTitulo}>Nenhum grupo ainda</Text>
             <Text style={styles.vazioTexto}>
-              Toque no botão + para adicionar pessoas com o convênio CarePlus.
+              Toque no botão + para criar um grupo ou entrar com o código de convite de um amigo.
             </Text>
           </View>
         ) : (
           <>
-            {/* Classificação semanal */}
-            <Text style={styles.secaoLabel}>Classificação semanal</Text>
+            {grupos.length > 1 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {grupos.map((g) => (
+                  <TouchableOpacity
+                    key={g.id}
+                    onPress={() => selecionarGrupo(g.id)}
+                    style={[styles.chip, g.id === grupoAtual?.id && styles.chipAtivo]}
+                  >
+                    <Text style={[styles.chipTexto, g.id === grupoAtual?.id && styles.chipTextoAtivo]}>{g.nome}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <Text style={styles.nomeGrupo}>{grupoAtual?.nome}</Text>
+
+            <TouchableOpacity style={styles.conviteBox} onPress={copiarConvite} activeOpacity={0.8}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.conviteLabel}>Código de convite</Text>
+                <Text style={styles.conviteCodigo}>{grupoAtual?.codigo}</Text>
+              </View>
+              <Ionicons name={copiado ? "checkmark" : "copy-outline"} size={20} color={colors.primary} />
+              <Text style={styles.conviteAcao}>{copiado ? "Copiado!" : "Copiar"}</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.secaoLabel}>Missões concluídas</Text>
             <View style={styles.card}>
               {rankingMissoes.map((m, i) => (
                 <LinhaRanking
-                  key={m.cpf}
+                  key={m.usuario_id}
                   posicao={i + 1}
-                  nome={m.nome}
-                  detalhe={`${m.missoes} missões concluídas`}
+                  nome={m.usuario_id === meuId ? `${m.nome} (você)` : m.nome}
+                  detalhe={`${m.missoes} ${m.missoes === 1 ? "missão concluída" : "missões concluídas"}`}
                   ultima={i === rankingMissoes.length - 1}
                 />
               ))}
             </View>
 
-            {/* Vitórias */}
-            <Text style={styles.secaoLabel}>Vitórias</Text>
+            <Text style={styles.secaoLabel}>Constância</Text>
             <View style={styles.card}>
-              {rankingVitorias.map((m, i) => (
+              {rankingStreak.map((m, i) => (
                 <LinhaRanking
-                  key={m.cpf}
+                  key={m.usuario_id}
                   posicao={i + 1}
-                  nome={m.nome}
-                  detalhe={`${m.vitorias} vitórias semanais`}
-                  ultima={i === rankingVitorias.length - 1}
+                  nome={m.usuario_id === meuId ? `${m.nome} (você)` : m.nome}
+                  detalhe={`🔥 ${m.streak} ${m.streak === 1 ? "dia seguido" : "dias seguidos"}`}
+                  ultima={i === rankingStreak.length - 1}
                 />
               ))}
             </View>
+            {membros.length === 1 && (
+              <Text style={styles.dica}>Compartilhe o código acima para seus amigos entrarem no grupo.</Text>
+            )}
           </>
         )}
       </ScrollView>
 
-      {/* botão flutuante "+" */}
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
-        onPress={() => setModalVisivel(true)}
-      >
+      <TouchableOpacity style={styles.fab} activeOpacity={0.85} onPress={() => setModalVisivel(true)}>
         <Ionicons name="add" size={32} color={colors.white} />
       </TouchableOpacity>
 
-      {/* modal de adicionar membro */}
       <ModalAddMembro
         visivel={modalVisivel}
         onFechar={() => setModalVisivel(false)}
-        onAdicionar={adicionarMembro}
-        codigoConvite={codigoConvite}
+        onEntrar={entrarGrupo}
+        onCriar={criarGrupo}
+        codigoInicial={typeof convite === "string" ? convite : ""}
       />
     </View>
   );
@@ -128,6 +177,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 18,
   },
+
+  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: colors.primary, marginRight: 8 },
+  chipAtivo: { backgroundColor: colors.primary },
+  chipTexto: { color: colors.primary, fontWeight: "700" },
+  chipTextoAtivo: { color: colors.white },
+  conviteBox: {
+    flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#EAF3DC",
+    borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20,
+  },
+  conviteLabel: { fontSize: 12, color: "#6A6A6A", fontWeight: "600" },
+  conviteCodigo: { fontSize: 20, fontWeight: "800", color: colors.primary, letterSpacing: 1 },
+  conviteAcao: { color: colors.primary, fontWeight: "700" },
+  dica: { textAlign: "center", color: "#6A6A6A", fontSize: 13, marginTop: -8 },
 
   secaoLabel: {
     fontSize: 15,

@@ -1,122 +1,99 @@
-// context/GruposContext.jsx
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useContext, useEffect, useState } from "react";
+// context/GruposContext.jsx — grupos reais (código de convite + ranking)
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { mensagemErro, supabase } from "../lib/supabase";
+import { useUsuario } from "./UsuarioContext";
 
 const GruposContext = createContext(null);
-const STORAGE_KEY = "@healthplus:grupos_v1";
-
-// Gera um código de convite aleatório (ex: PINK-7K2F)
-function gerarCodigoConvite() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let sufixo = "";
-  for (let i = 0; i < 4; i++) {
-    sufixo += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `PINK-${sufixo}`;
-}
-
-// Grupo começa vazio — os membros são adicionados pelo usuário (por CPF)
-const MEMBROS_INICIAIS = [];
-
-// ----- validação de CPF (algoritmo oficial) -----
-export function limparCpf(cpf) {
-  return (cpf || "").replace(/\D/g, "");
-}
-
-export function formatarCpf(cpf) {
-  const c = limparCpf(cpf).slice(0, 11);
-  return c
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-}
-
-export function cpfValido(cpf) {
-  const c = limparCpf(cpf);
-  if (c.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(c)) return false; // rejeita 111.111.111-11 etc.
-
-  let soma = 0;
-  for (let i = 0; i < 9; i++) soma += Number(c[i]) * (10 - i);
-  let dig1 = (soma * 10) % 11;
-  if (dig1 === 10) dig1 = 0;
-  if (dig1 !== Number(c[9])) return false;
-
-  soma = 0;
-  for (let i = 0; i < 10; i++) soma += Number(c[i]) * (11 - i);
-  let dig2 = (soma * 10) % 11;
-  if (dig2 === 10) dig2 = 0;
-  if (dig2 !== Number(c[10])) return false;
-
-  return true;
-}
 
 export function GruposProvider({ children }) {
-  const [nomeGrupo, setNomeGrupo] = useState("PinkCode");
-  const [codigoConvite, setCodigoConvite] = useState(gerarCodigoConvite());
-  const [membros, setMembros] = useState(MEMBROS_INICIAIS);
+  const { perfil } = useUsuario();
+  const userId = perfil?.id;
+  const [grupos, setGrupos] = useState([]);
+  const [grupoId, setGrupoId] = useState(null);
+  const [membros, setMembros] = useState([]);
   const [carregado, setCarregado] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const salvo = await AsyncStorage.getItem(STORAGE_KEY);
-        if (salvo) {
-          const dados = JSON.parse(salvo);
-          if (dados.nomeGrupo) setNomeGrupo(dados.nomeGrupo);
-          if (dados.membros) setMembros(dados.membros);
-        }
-      } catch (e) {
-        console.log("Erro ao carregar grupos:", e);
-      } finally {
-        setCarregado(true);
-      }
-    })();
-  }, []);
+  const grupoAtual = grupos.find((g) => g.id === grupoId) || null;
+
+  const carregarGrupos = useCallback(async () => {
+    if (!userId) {
+      setGrupos([]);
+      setGrupoId(null);
+      return;
+    }
+    const { data } = await supabase.from("grupos").select("id, nome, codigo, dono_id").order("criado_em");
+    const lista = data || [];
+    setGrupos(lista);
+    setGrupoId((atual) => (lista.some((g) => g.id === atual) ? atual : lista[0]?.id ?? null));
+    setCarregado(true);
+  }, [userId]);
+
+  const carregarRanking = useCallback(async () => {
+    if (!grupoId) {
+      setMembros([]);
+      return;
+    }
+    const { data } = await supabase.rpc("ranking_grupo", { p_grupo: grupoId });
+    setMembros(data || []);
+  }, [grupoId]);
 
   useEffect(() => {
-    if (!carregado) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ nomeGrupo, membros })).catch((e) =>
-      console.log("Erro ao salvar grupos:", e)
-    );
-  }, [nomeGrupo, membros, carregado]);
+    carregarGrupos();
+  }, [carregarGrupos]);
 
-  // Adiciona um membro por CPF. Retorna { ok, erro } pra tela mostrar feedback.
-  function adicionarMembro(nome) {
-    const nomeLimpo = (nome || "").trim();
+  // atualiza o ranking ao trocar de grupo e a cada 30s enquanto o app está aberto
+  useEffect(() => {
+    carregarRanking();
+    const t = setInterval(carregarRanking, 30000);
+    return () => clearInterval(t);
+  }, [carregarRanking]);
 
-    if (nomeLimpo.length < 2) return { ok: false, erro: "Digite o nome da pessoa." };
-    if (membros.some((m) => m.nome.toLowerCase() === nomeLimpo.toLowerCase()))
-      return { ok: false, erro: "Essa pessoa já está no grupo." };
-
-    const id = Date.now().toString(); // id único simples
-    setMembros((lista) => [
-      ...lista,
-      { cpf: id, nome: nomeLimpo, missoes: 0, vitorias: 0 },
-    ]);
-    return { ok: true };
-   }
-
-  function removerMembro(cpf) {
-    const cpfLimpo = limparCpf(cpf);
-    setMembros((lista) => lista.filter((m) => limparCpf(m.cpf) !== cpfLimpo));
+  async function criarGrupo(nome) {
+    try {
+      const { data, error } = await supabase.rpc("criar_grupo", { p_nome: nome });
+      if (error) throw error;
+      await carregarGrupos();
+      setGrupoId(data.id);
+      return { ok: true, codigo: data.codigo };
+    } catch (e) {
+      return { ok: false, erro: mensagemErro(e) };
+    }
   }
 
-  // Rankings ordenados (cópias pra não bagunçar o estado)
+  async function entrarGrupo(codigo) {
+    try {
+      const { data, error } = await supabase.rpc("entrar_grupo", { p_codigo: codigo });
+      if (error) throw error;
+      await carregarGrupos();
+      setGrupoId(data);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, erro: mensagemErro(e) };
+    }
+  }
+
+  async function sairGrupo(id) {
+    await supabase.from("grupo_membros").delete().eq("grupo_id", id).eq("usuario_id", userId);
+    await carregarGrupos();
+  }
+
   const rankingMissoes = [...membros].sort((a, b) => b.missoes - a.missoes);
-  const rankingVitorias = [...membros].sort((a, b) => b.vitorias - a.vitorias);
+  const rankingStreak = [...membros].sort((a, b) => b.streak - a.streak);
 
   return (
     <GruposContext.Provider
       value={{
-        nomeGrupo,
-        setNomeGrupo,
-        codigoConvite,
+        grupos,
+        grupoAtual,
+        selecionarGrupo: setGrupoId,
         membros,
-        adicionarMembro,
-        removerMembro,
         rankingMissoes,
-        rankingVitorias,
+        rankingStreak,
+        criarGrupo,
+        entrarGrupo,
+        sairGrupo,
+        recarregar: () => Promise.all([carregarGrupos(), carregarRanking()]),
+        meuId: userId,
         carregado,
       }}
     >

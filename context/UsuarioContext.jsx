@@ -1,52 +1,108 @@
-// context/UsuarioContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// context/UsuarioContext.jsx — sessão (Supabase Auth) + perfil do banco
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { emailDoCpf, supabase } from "../lib/supabase";
 
 const UsuarioContext = createContext(null);
 
 export function UsuarioProvider({ children }) {
-  const [usuario, setUsuario] = useState(null);
+  const [sessao, setSessao] = useState(null);
+  const [perfil, setPerfil] = useState(null);
   const [carregando, setCarregando] = useState(true);
 
-  // Carrega o usuário salvo no AsyncStorage quando o app abre
-  useEffect(() => {
-    async function carregarUsuario() {
-      try {
-        const salvo = await AsyncStorage.getItem("@healthplus:usuario");
-        if (salvo) {
-          setUsuario(JSON.parse(salvo));
-        }
-      } catch (e) {
-        console.log("Erro ao carregar usuário:", e);
-      } finally {
-        setCarregando(false);
-      }
+  const carregarPerfil = useCallback(async (userId) => {
+    if (!userId) {
+      setPerfil(null);
+      return null;
     }
-    carregarUsuario();
+    const { data, error } = await supabase.from("perfis").select("*").eq("id", userId).single();
+    if (error) {
+      console.log("Erro ao carregar perfil:", error.message);
+      return null;
+    }
+    setPerfil(data);
+    return data;
   }, []);
 
-  // Salva o usuário no AsyncStorage e no contexto
-  async function salvarUsuario(dados) {
-    try {
-      await AsyncStorage.setItem("@healthplus:usuario", JSON.stringify(dados));
-      setUsuario(dados);
-    } catch (e) {
-      console.log("Erro ao salvar usuário:", e);
-    }
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      setSessao(data.session);
+      await carregarPerfil(data.session?.user?.id);
+      setCarregando(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_evento, novaSessao) => {
+      setSessao(novaSessao);
+      if (!novaSessao) setPerfil(null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [carregarPerfil]);
+
+  async function entrar(cpf, senha) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email: emailDoCpf(cpf), password: senha });
+    if (error) throw error;
+    setSessao(data.session);
+    await carregarPerfil(data.user.id);
   }
 
-  // Remove o usuário do AsyncStorage e do contexto (logout)
-  async function logout() {
-    try {
-      await AsyncStorage.removeItem("@healthplus:usuario");
-      setUsuario(null);
-    } catch (e) {
-      console.log("Erro ao fazer logout:", e);
+  async function cadastrar(nome, cpf, senha) {
+    const { data, error } = await supabase.auth.signUp({
+      email: emailDoCpf(cpf),
+      password: senha,
+      options: { data: { nome } },
+    });
+    if (error) throw error;
+    // sem confirmação de e-mail, o cadastro já devolve a sessão
+    if (data.session) {
+      setSessao(data.session);
+      await carregarPerfil(data.user.id);
     }
+    return !!data.session;
+  }
+
+  async function atualizarPerfil(campos) {
+    if (!perfil) return;
+    const { data, error } = await supabase.from("perfis").update(campos).eq("id", perfil.id).select().single();
+    if (error) throw error;
+    setPerfil(data);
+  }
+
+  async function mudarSenha(novaSenha) {
+    const { error } = await supabase.auth.updateUser({ password: novaSenha });
+    if (error) throw error;
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    setPerfil(null);
+    setSessao(null);
+  }
+
+  const recarregarPerfil = () => carregarPerfil(sessao?.user?.id);
+
+  // Compatibilidade com as telas existentes (usuario.nome, usuario.foto)
+  const usuario = perfil ? { ...perfil, foto: perfil.foto_url } : null;
+  async function salvarUsuario(dados) {
+    const campos = {};
+    if (dados.nome !== undefined) campos.nome = dados.nome;
+    if (dados.foto !== undefined) campos.foto_url = dados.foto;
+    await atualizarPerfil(campos);
   }
 
   return (
-    <UsuarioContext.Provider value={{ usuario, carregando, salvarUsuario, logout }}>
+    <UsuarioContext.Provider
+      value={{
+        sessao,
+        usuario,
+        perfil,
+        carregando,
+        entrar,
+        cadastrar,
+        atualizarPerfil,
+        salvarUsuario,
+        mudarSenha,
+        recarregarPerfil,
+        logout,
+      }}
+    >
       {children}
     </UsuarioContext.Provider>
   );

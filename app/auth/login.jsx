@@ -14,7 +14,7 @@ import {
   Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { mensagemErro } from "../../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "react-native";
 import { colors } from "../../constants/colors";
@@ -57,7 +57,7 @@ export default function Login() {
   const [lembrar, setLembrar] = useState(false);
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { salvarUsuario } = useUsuario();
+  const { entrar } = useUsuario();
   const [erro, setErro] = useState("");
   // Estados do modal de recuperação de senha
   const [modalVisivel, setModalVisivel] = useState(false);
@@ -73,53 +73,9 @@ export default function Login() {
     setErro("");
   }
 
-  async function handleRecuperarSenha() {
-    const cpfLimpo = cpfRecupera.replace(/[^\d]/g, "");
-
-    if (!validarCPF(cpfLimpo)) {
-      setErroModal("CPF inválido. Verifique e tente novamente.");
-      return;
-    }
-
-    if (novaSenha.length < 6) {
-      setErroModal("A senha deve ter pelo menos 6 caracteres.");
-      return;
-    }
-
-    if (novaSenha !== confirmarNovaSenha) {
-      setErroModal("As senhas não coincidem.");
-      return;
-    }
-
-    setLoadingModal(true);
-    setErroModal("");
-
-    try {
-      const response = await fetch(`https://health-plus-api.onrender.com/usuario/${cpfLimpo}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senha: novaSenha }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSucessoModal("Senha atualizada com sucesso!");
-        setTimeout(() => {
-          setModalVisivel(false);
-          setCpfRecupera("");
-          setNovaSenha("");
-          setConfirmarNovaSenha("");
-          setSucessoModal("");
-        }, 2000);
-      } else {
-        setErroModal(data.erro || "CPF não encontrado.");
-      }
-    } catch (e) {
-      setErroModal("Erro de conexão. Verifique sua internet.");
-    } finally {
-      setLoadingModal(false);
-    }
+  // Recuperação: sem e-mail cadastrado, a troca é feita pela equipe no estande
+  function handleRecuperarSenha() {
+    setModalVisivel(false);
   }
 
   async function handleEntrar() {
@@ -139,23 +95,10 @@ export default function Login() {
     setErro("");
 
     try {
-      const response = await fetch("https://health-plus-api.onrender.com/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf: cpfLimpo, senha }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await salvarUsuario(data);
-        router.replace("/(tabs)");
-
-      } else {
-        setErro(data.erro || "CPF ou senha incorretos.");
-      }
+      await entrar(cpfLimpo, senha);
+      router.replace("/(tabs)");
     } catch (e) {
-      setErro("Erro de conexão. Verifique sua internet.");
+      setErro(mensagemErro(e));
     } finally {
       setLoading(false);
     }
@@ -280,48 +223,9 @@ export default function Login() {
           <View style={styles.modalBox}>
             <Text style={styles.modalTitulo}>Recuperar senha</Text>
             <Text style={styles.modalSubtitulo}>
-              Digite seu CPF e a nova senha desejada.
+              Esqueceu a senha? Procure a equipe Health Plus no estande do evento que a gente te ajuda a
+              recuperar o acesso, ou crie uma nova conta com outro CPF.
             </Text>
-
-            {/* CPF */}
-            <Text style={styles.modalLabel}>CPF</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="000.000.000-00"
-              placeholderTextColor="#ccc"
-              value={cpfRecupera}
-              onChangeText={(t) => { setCpfRecupera(formatarCPF(t)); setErroModal(""); }}
-              keyboardType="numeric"
-              maxLength={14}
-            />
-
-            {/* Nova senha */}
-            <Text style={styles.modalLabel}>Nova senha</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Mínimo 6 caracteres"
-              placeholderTextColor="#ccc"
-              value={novaSenha}
-              onChangeText={(t) => { setNovaSenha(t); setErroModal(""); }}
-              secureTextEntry
-            />
-
-            {/* Confirmar senha */}
-            <Text style={styles.modalLabel}>Confirmar nova senha</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Repita a nova senha"
-              placeholderTextColor="#ccc"
-              value={confirmarNovaSenha}
-              onChangeText={(t) => { setConfirmarNovaSenha(t); setErroModal(""); }}
-              secureTextEntry
-            />
-
-            {/* Erro */}
-            {erroModal ? <Text style={styles.modalErro}>{erroModal}</Text> : null}
-
-            {/* Sucesso */}
-            {sucessoModal ? <Text style={styles.modalSucesso}>{sucessoModal}</Text> : null}
 
             {/* Botões */}
             <TouchableOpacity
@@ -332,22 +236,10 @@ export default function Login() {
               {loadingModal ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.modalBotaoText}>Confirmar</Text>
+                <Text style={styles.modalBotaoText}>Entendi</Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.modalCancelar}
-              onPress={() => {
-                setModalVisivel(false);
-                setCpfRecupera("");
-                setNovaSenha("");
-                setConfirmarNovaSenha("");
-                setErroModal("");
-              }}
-            >
-              <Text style={styles.modalCancelarText}>Cancelar</Text>
-            </TouchableOpacity>
 
           </View>
         </View>

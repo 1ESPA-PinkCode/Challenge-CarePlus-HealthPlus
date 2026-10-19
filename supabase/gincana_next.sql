@@ -1,5 +1,5 @@
 -- =====================================================================
--- Health Plus — GINCANA NEXT FIAP (24/10, 16:30–18:00)
+-- Health Plus — GINCANA NEXT FIAP (24/10, 15:00–18:00)
 -- Rode DEPOIS do schema.sql. Cole tudo no SQL Editor → Ctrl+A → Run.
 -- Pode rodar de novo sem problema.
 -- =====================================================================
@@ -16,7 +16,7 @@ create table if not exists public.evento (
   fim    timestamptz not null
 );
 insert into public.evento (id, inicio, fim)
-values (1, '2026-10-24 16:30:00-03', '2026-10-24 18:00:00-03')
+values (1, '2026-10-24 15:00:00-03', '2026-10-24 18:00:00-03')
 on conflict (id) do nothing;
 
 -- ---------- Catálogo de missões (pontos e regras ficam no servidor) ----------

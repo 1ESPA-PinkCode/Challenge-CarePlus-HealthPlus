@@ -65,7 +65,10 @@ export default function MissaoCard({
         </View>
 
        {feita ? (
-          <Text style={styles.concluida}>Concluída! 🍬</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+            <Text style={styles.concluida}>Concluída!</Text>
+          </View>
         ) : (
           <TouchableOpacity style={styles.btnRegistrar} onPress={onRegistrar} activeOpacity={0.8}>
             <Text style={styles.btnRegistrarTexto}>{botao}</Text>

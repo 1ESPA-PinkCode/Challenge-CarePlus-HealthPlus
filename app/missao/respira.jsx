@@ -4,6 +4,7 @@ import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from "reac
 import TelaAtividade from "../../components/TelaAtividade";
 import { colors } from "../../constants/colors";
 import { useMissoes } from "../../context/MissoesContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const DURACAO = 60;
 const FASES = [
@@ -61,7 +62,7 @@ export default function Respira() {
       <View style={styles.centro}>
         <Text style={styles.instrucao}>
           {fim
-            ? "Prontinho! Você tirou um minuto só pra você 💚"
+            ? "Prontinho! Você tirou um minuto só pra você."
             : rodando
             ? FASES[fase].texto
             : "Encontre uma posição confortável e acompanhe o círculo por 1 minuto."}
@@ -69,7 +70,7 @@ export default function Respira() {
 
         <View style={styles.circuloArea}>
           <Animated.View style={[styles.circulo, { transform: [{ scale: escala }] }]} />
-          <Text style={styles.tempo}>{fim ? "🌸" : `${restante}s`}</Text>
+          {fim ? <Ionicons name="flower" size={70} color={colors.white} /> : <Text style={styles.tempo}>{restante}s</Text>}
         </View>
 
         {!rodando && (

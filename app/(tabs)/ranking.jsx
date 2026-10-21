@@ -4,8 +4,8 @@ import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../../constants/colors";
 import { formatarTempo, useEvento, useRanking } from "../../lib/evento";
+import Icone, { IconeTexto, Posicao } from "../../components/Icone";
 
-const MEDALHAS = ["🥇", "🥈", "🥉"];
 
 export default function Ranking() {
   const router = useRouter();
@@ -23,8 +23,8 @@ export default function Ranking() {
           {status === "antes"
             ? `Começa em ${formatarTempo(paraComecarMs)}`
             : status === "aberto"
-            ? `⏱ Termina em ${formatarTempo(restanteMs)}`
-            : "🏁 Gincana encerrada"}
+            ? `Termina em ${formatarTempo(restanteMs)}`
+            : "Gincana encerrada"}
         </Text>
       </View>
 
@@ -35,14 +35,15 @@ export default function Ranking() {
             <Text style={styles.meuTitulo}>Você está em {eu.posicao}º lugar!</Text>
             <Text style={styles.meuSub}>
               {eu.pontos} pontos
-              {acima ? ` · faltam ${acima.pontos - eu.pontos + 1} para passar ${acima.nome}` : eu.posicao === 1 ? " · você está liderando! 🏆" : ""}
+              {acima ? ` · faltam ${acima.pontos - eu.pontos + 1} para passar ${acima.nome}` : eu.posicao === 1 ? " · você está liderando!" : ""}
             </Text>
           </View>
         </View>
       )}
 
       <View style={styles.premio}>
-        <Text style={styles.premioTexto}>🍫 Quem terminar em 1º às 18:00 ganha uma caixa de bombom! Empate: vence quem andou mais.</Text>
+        <Icone nome="gift" tamanho={40} tom="branco" />
+        <Text style={[styles.premioTexto, { flex: 1 }]}>Quem terminar em 1º às 18:00 ganha uma caixa de bombom! Empate: vence quem andou mais.</Text>
       </View>
 
       <TouchableOpacity style={styles.passosBtn} onPress={() => router.push("/passos")} activeOpacity={0.85}>
@@ -52,13 +53,16 @@ export default function Ranking() {
       </TouchableOpacity>
 
       <View style={styles.card}>
-        {top.length === 0 && <Text style={styles.vazio}>Ninguém pontuou ainda. Comece pelas missões! 🌱</Text>}
+        {top.length === 0 && <Text style={styles.vazio}>Ninguém pontuou ainda. Comece pelas missões!</Text>}
         {top.map((l, i) => (
           <View key={l.posicao} style={[styles.linha, i === top.length - 1 && { borderBottomWidth: 0 }, l.sou_eu && styles.linhaEu]}>
-            <Text style={styles.pos}>{MEDALHAS[l.posicao - 1] || `${l.posicao}º`}</Text>
+            <Posicao n={l.posicao} />
             <View style={{ flex: 1 }}>
               <Text style={styles.nome}>{l.nome}{l.sou_eu ? " (você)" : ""}</Text>
-              <Text style={styles.detalhe}>👟 {l.passos.toLocaleString("pt-BR")} passos</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                <IconeTexto nome="footsteps" cor="#6A6A6A" tamanho={13} />
+                <Text style={styles.detalhe}>{l.passos.toLocaleString("pt-BR")} passos</Text>
+              </View>
             </View>
             <Text style={styles.pts}>{l.pontos}</Text>
           </View>
@@ -78,8 +82,8 @@ const styles = StyleSheet.create({
   meuPos: { fontSize: 34, fontWeight: "900", color: colors.primary },
   meuTitulo: { fontSize: 17, fontWeight: "800", color: "#1A1A1A" },
   meuSub: { fontSize: 14, color: "#4A4A4A", marginTop: 2 },
-  premio: { backgroundColor: "#FBF1B8", borderRadius: 16, padding: 12, marginBottom: 12 },
-  premioTexto: { color: "#5A6B2F", fontWeight: "700", textAlign: "center" },
+  premio: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FBF1B8", borderRadius: 16, padding: 12, marginBottom: 12 },
+  premioTexto: { color: "#5A6B2F", fontWeight: "700" },
   passosBtn: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.primary, borderRadius: 16, padding: 14, marginBottom: 16 },
   passosTexto: { flex: 1, color: colors.white, fontWeight: "800", fontSize: 15 },
   card: {
@@ -97,6 +101,6 @@ const styles = StyleSheet.create({
   linhaEu: { backgroundColor: "#F3FAEC", marginHorizontal: -16, paddingHorizontal: 16 },
   pos: { fontSize: 20, fontWeight: "800", color: colors.primary, width: 38 },
   nome: { fontSize: 17, fontWeight: "800", color: "#1A1A1A" },
-  detalhe: { fontSize: 13, color: "#6A6A6A", marginTop: 2 },
+  detalhe: { fontSize: 13, color: "#6A6A6A" },
   pts: { fontSize: 20, fontWeight: "900", color: colors.primary },
 });

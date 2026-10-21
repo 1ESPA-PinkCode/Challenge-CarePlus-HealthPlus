@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors } from "../../constants/colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
@@ -78,7 +79,7 @@ function Checkbox({ checked, onPress, titulo, descricao, obrigatorio }) {
   return (
     <TouchableOpacity style={styles.checkboxRow} onPress={onPress} activeOpacity={0.7}>
       <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-        {checked && <Text style={styles.checkmark}>✓</Text>}
+        {checked && <Ionicons name="checkmark" size={16} color={colors.white} />}
       </View>
       <View style={styles.checkboxTexto}>
         <Text style={styles.checkboxTitulo}>{titulo}</Text>

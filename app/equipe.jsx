@@ -7,6 +7,8 @@ import { colors } from "../constants/colors";
 import { CATALOGO_MISSOES } from "../context/MissoesContext";
 import { useUsuario } from "../context/UsuarioContext";
 import { mensagemErro, supabase } from "../lib/supabase";
+import Icone from "../components/Icone";
+import { Ionicons } from "@expo/vector-icons";
 
 const nomeMissao = (id) => CATALOGO_MISSOES.find((m) => m.id === id)?.titulo || id;
 
@@ -54,7 +56,7 @@ export default function Equipe() {
     const { data, error } = await supabase.rpc("equipe_entregar_doce", { p_codigo: doce?.codigo });
     setOcupado(false);
     if (error) return setMsg(mensagemErro(error));
-    setMsg(data ? "✅ Doce entregue!" : "Esse cupom já tinha sido usado.");
+    setMsg(data ? "Doce entregue!" : "Esse cupom já tinha sido usado.");
     setDoce(null);
     setBusca("");
     carregar();
@@ -77,7 +79,7 @@ export default function Equipe() {
     const { error } = await supabase.rpc("equipe_dar_missao", { p_codigo: pessoa?.codigo_pessoal, p_missao: missao });
     setOcupado(false);
     if (error) return setMsgPessoa(mensagemErro(error));
-    setMsgPessoa(`✅ ${nomeMissao(missao)} confirmada para ${pessoa?.nome}!`);
+    setMsgPessoa(`${nomeMissao(missao)} confirmada para ${pessoa?.nome}!`);
     setPessoa((p) => (p ? { ...p, [missao]: true } : p));
     carregar();
   }
@@ -88,7 +90,7 @@ export default function Equipe() {
     return (
       <TelaAtividade titulo="Equipe">
         <View style={styles.centro}>
-          <Text style={{ fontSize: 56 }}>🔒</Text>
+          <Icone nome="lock-closed" tamanho={72} tom="claro" />
           <Text style={styles.titulo}>Área da equipe Health Plus</Text>
           <Text style={styles.texto}>
             {perfil ? "Sua conta ainda não está liberada como equipe." : "Entre com a conta da equipe para continuar."}
@@ -107,7 +109,7 @@ export default function Equipe() {
     <TelaAtividade titulo="Equipe">
       <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
         {/* Dar missão (ativação / story) */}
-        <Text style={styles.secao}>⭐ Confirmar ativação ou story</Text>
+        <Secao icone="star">Confirmar ativação ou story</Secao>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -129,13 +131,17 @@ export default function Equipe() {
           <View style={styles.card}>
             <Text style={styles.doceNome}>{pessoa.nome}</Text>
             {[
-              ["ativacao", "⚡ Participou da ativação"],
-              ["story", "📸 Postou o story"],
-            ].map(([id, label]) =>
+              ["ativacao", "Participou da ativação", "flash"],
+              ["story", "Postou o story", "logo-instagram"],
+            ].map(([id, label, ic]) =>
               pessoa[id] ? (
-                <Text key={id} style={styles.texto}>{label}: já confirmado ✓</Text>
+                <View key={id} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                  <Text style={styles.texto}>{label}: já confirmado</Text>
+                </View>
               ) : (
-                <TouchableOpacity key={id} style={styles.botao} onPress={() => darMissao(id)} disabled={ocupado}>
+                <TouchableOpacity key={id} style={[styles.botao, styles.botaoIcone]} onPress={() => darMissao(id)} disabled={ocupado}>
+                  <Ionicons name={ic} size={18} color={colors.white} />
                   <Text style={styles.botaoTexto}>{label}</Text>
                 </TouchableOpacity>
               )
@@ -145,7 +151,7 @@ export default function Equipe() {
         {msgPessoa ? <Text style={styles.msg}>{msgPessoa}</Text> : null}
 
         {/* Entregar doce */}
-        <Text style={styles.secao}>🍬 Entregar doce</Text>
+        <Secao icone="gift">Entregar doce</Secao>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -189,7 +195,7 @@ export default function Equipe() {
         {/* Resumo */}
         {resumo && (
           <>
-            <Text style={styles.secao}>📊 Resumo ao vivo</Text>
+            <Secao icone="stats-chart">Resumo ao vivo</Secao>
             <View style={styles.grade}>
               {[
                 ["Participantes", resumo.participantes],
@@ -215,7 +221,19 @@ export default function Equipe() {
   );
 }
 
+function Secao({ icone, children }) {
+  return (
+    <View style={styles.secaoLinha}>
+      <Icone nome={icone} tamanho={30} tom="verde" />
+      <Text style={styles.secaoTexto}>{children}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  secaoLinha: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14, marginBottom: 10 },
+  secaoTexto: { fontSize: 18, fontWeight: "900", color: colors.primary },
+  botaoIcone: { flexDirection: "row", justifyContent: "center", gap: 8 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
   titulo: { fontSize: 22, fontWeight: "900", color: colors.primary, textAlign: "center" },
   secao: { fontSize: 18, fontWeight: "900", color: colors.primary, marginTop: 8, marginBottom: 10 },

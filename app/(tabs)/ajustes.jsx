@@ -104,7 +104,7 @@ export default function Ajustes() {
     setErroSenha("");
     try {
       await mudarSenha(novaSenha);
-      setSucessoSenha("Senha atualizada com sucesso! 🌱");
+      setSucessoSenha("Senha atualizada com sucesso!");
       setTimeout(() => {
         setModalSenha(false);
         setSenhaAtual("");
@@ -302,7 +302,7 @@ export default function Ajustes() {
               <View style={styles.resumoBarra}>
                 <View style={[styles.resumoBarraFill, { width: `${(concluidas / totalMissoes) * 100}%` }]} />
               </View>
-              <Text style={styles.resumoGemas}>🔮 {gemasHoje} gemas ganhas hoje</Text>
+              <Text style={styles.resumoGemas}>{gemasHoje} pontos ganhos hoje</Text>
             </View>
 
             {/* Lista de missões */}

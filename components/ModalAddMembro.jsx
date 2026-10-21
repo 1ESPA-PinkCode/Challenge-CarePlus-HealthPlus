@@ -14,11 +14,15 @@ import {
 } from "react-native";
 import { colors } from "../constants/colors";
 
-export default function ModalAddMembro({ visivel, onFechar, onEntrar, onCriar, codigoInicial }) {
+export default function ModalAddMembro({ visivel, onFechar, onEntrar, onCriar, codigoInicial, modoInicial }) {
   const [modo, setModo] = useState("entrar"); // "entrar" | "criar"
   const [valor, setValor] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  useEffect(() => {
+    if (visivel && modoInicial) setModo(modoInicial);
+  }, [visivel, modoInicial]);
 
   useEffect(() => {
     if (visivel && codigoInicial) {

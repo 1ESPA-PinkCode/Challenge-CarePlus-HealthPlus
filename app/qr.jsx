@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "rea
 import { colors } from "../constants/colors";
 import { useMissoes } from "../context/MissoesContext";
 import { useUsuario } from "../context/UsuarioContext";
+import Icone from "../components/Icone";
 
 
 
@@ -39,13 +40,13 @@ export default function QR() {
         <ActivityIndicator color={colors.white} size="large" />
       ) : (
         <View style={styles.card}>
-          <Text style={{ fontSize: 64 }}>{estado === "erro" ? "🤔" : "🔍"}</Text>
+          <Icone nome={estado === "erro" ? "alert-circle" : "qr-code"} tamanho={90} tom={estado === "erro" ? "amarelo" : "verde"} />
           <Text style={styles.titulo}>
             {estado === "ok" ? "QR code encontrado!" : estado === "ja" ? "Você já achou este QR!" : "Ops!"}
           </Text>
           <Text style={styles.texto}>
             {estado === "ok"
-              ? "Missão concluída. Obrigada por visitar o RENMAP 💚"
+              ? "Missão concluída. Obrigada por visitar o RENMAP!"
               : estado === "ja"
               ? "Essa missão já está concluída. Bora para a próxima!"
               : erro}

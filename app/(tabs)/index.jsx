@@ -13,6 +13,7 @@ import { useJardim } from "../../context/JardimContext";
 import { useMissoes } from "../../context/MissoesContext";
 import { useUsuario } from "../../context/UsuarioContext";
 import { useGemas } from "../../contexts/GemsContext";
+import Icone from "../../components/Icone";
 
 function StatusItem({ icon, label, progress, cor }) {
   return (
@@ -55,7 +56,7 @@ export default function Inicio() {
       <View style={styles.florCard}>
         <Text style={styles.florTitulo}>
           {progresso >= 1
-            ? `${florNome} florid${florFem ? "a" : "o"}! 🌸`
+            ? `${florNome} florid${florFem ? "a" : "o"}!`
             : progresso >= 0.6
             ? `${florFem ? "Sua" : "Seu"} ${florNome.toLowerCase()} está quase abrindo`
             : progresso > 0
@@ -105,12 +106,12 @@ export default function Inicio() {
       <TituloSecao>Gincana NEXT</TituloSecao>
       <View style={styles.gincana}>
         <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/ranking")} activeOpacity={0.85}>
-          <Text style={styles.gincanaEmoji}>🏆</Text>
+          <Icone nome="trophy" tamanho={46} tom="verde" />
           <Text style={styles.gincanaTitulo}>{pontos} pontos</Text>
           <Text style={styles.gincanaSub}>Ver ranking</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/passos")} activeOpacity={0.85}>
-          <Text style={styles.gincanaEmoji}>👟</Text>
+          <Icone nome="footsteps" tamanho={46} tom="agua" />
           <Text style={styles.gincanaTitulo}>{(usuario?.passos ?? 0).toLocaleString("pt-BR")} passos</Text>
           <Text style={styles.gincanaSub}>Contar passos</Text>
         </TouchableOpacity>
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   gincana: { flexDirection: "row", gap: 12, marginHorizontal: 16 },
   gincanaCard: { flex: 1, backgroundColor: "#EAF3DC", borderRadius: 20, padding: 16, alignItems: "center" },
   gincanaEmoji: { fontSize: 34 },
-  gincanaTitulo: { fontSize: 18, fontWeight: "900", color: colors.primary, marginTop: 4 },
+  gincanaTitulo: { fontSize: 18, fontWeight: "900", color: colors.primary, marginTop: 8 },
   gincanaSub: { fontSize: 13, color: "#5A6B2F", fontWeight: "700", marginTop: 2 },
   verTodas: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 10 },
   verTodasTexto: { color: colors.primary, fontWeight: "800", fontSize: 15 },

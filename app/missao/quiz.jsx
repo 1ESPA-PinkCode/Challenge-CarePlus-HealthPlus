@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import TelaAtividade from "../../components/TelaAtividade";
 import { colors } from "../../constants/colors";
 import { useMissoes } from "../../context/MissoesContext";
+import Icone from "../../components/Icone";
 
 const PERGUNTAS = [
   { p: "Quanto de água um adulto deve beber por dia, em média?", o: ["500 ml", "Cerca de 2 litros", "5 litros"], c: 1, e: "A recomendação geral fica em torno de 2 litros, variando com o calor e a atividade física." },
@@ -59,7 +60,7 @@ export default function Quiz() {
     return (
       <TelaAtividade titulo="Quiz de autocuidado">
         <View style={styles.centro}>
-          <Text style={{ fontSize: 80 }}>{resultado === "ganhou" ? "🏆" : "🌱"}</Text>
+          <Icone nome={resultado === "ganhou" ? "trophy" : "leaf"} tamanho={110} tom={resultado === "ganhou" ? "verde" : "claro"} />
           <Text style={styles.titulo}>{resultado === "ganhou" ? "Acertou tudo!" : `Você acertou ${acertos} de 3`}</Text>
           <Text style={styles.texto}>
             {resultado === "ganhou" ? "Você manda bem no autocuidado!" : "Quase! Tente de novo com novas perguntas."}
@@ -96,7 +97,7 @@ export default function Quiz() {
         {escolha !== null && (
           <>
             <Text style={styles.explicacao}>
-              {escolha === q.c ? "✅ Isso aí! " : "❌ Não foi dessa vez. "}
+              {escolha === q.c ? "Isso aí! " : "Não foi dessa vez. "}
               {q.e}
             </Text>
             <TouchableOpacity style={styles.botao} onPress={proxima}>

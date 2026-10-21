@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../constants/colors";
 import { CATALOGO_MISSOES } from "../../context/MissoesContext";
 import { useGemas } from "../../contexts/GemsContext";
+import Icone from "../../components/Icone";
 
 const nomeMissao = (id) => CATALOGO_MISSOES.find((m) => m.id === id)?.titulo || id;
 
@@ -28,11 +29,11 @@ export default function Recompensas() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.titleBox}>
-        <Text style={styles.title}>Seus doces 🍬</Text>
+        <Text style={styles.title}>Seus doces</Text>
       </View>
 
       <View style={styles.premio}>
-        <Text style={styles.premioEmoji}>🍫</Text>
+        <Icone nome="gift" tamanho={50} tom="branco" />
         <View style={{ flex: 1 }}>
           <Text style={styles.premioTitulo}>Grande prêmio</Text>
           <Text style={styles.premioTexto}>Quem estiver em 1º no ranking às 18:00 ganha uma caixa de bombom!</Text>
@@ -45,7 +46,7 @@ export default function Recompensas() {
 
       {doces.length === 0 && (
         <View style={styles.vazio}>
-          <Text style={{ fontSize: 48 }}>🍭</Text>
+          <Icone nome="ice-cream-outline" tamanho={64} tom="claro" />
           <Text style={styles.vazioTexto}>Conclua sua primeira missão para ganhar um doce!</Text>
         </View>
       )}
@@ -66,7 +67,7 @@ export default function Recompensas() {
         <View key={d.codigo} style={[styles.cupom, styles.cupomEntregue]}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cupomMissao, { color: "#8A8A8A" }]}>{nomeMissao(d.missao_id)}</Text>
-            <Text style={styles.cupomLabel}>Doce entregue ✓</Text>
+            <Text style={styles.cupomLabel}>Doce entregue</Text>
           </View>
           <Text style={[styles.cupomCodigo, styles.codigoRiscado]}>{d.codigo}</Text>
         </View>

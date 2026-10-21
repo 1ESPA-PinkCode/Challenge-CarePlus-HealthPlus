@@ -3,8 +3,8 @@ import { Image, Platform, StyleSheet, Text, useWindowDimensions, View } from "re
 import QRCode from "react-native-qrcode-svg";
 import { colors } from "../constants/colors";
 import { formatarTempo, useEvento, useRanking } from "../lib/evento";
+import Icone, { IconeTexto, Posicao } from "../components/Icone";
 
-const MEDALHAS = ["🥇", "🥈", "🥉"];
 
 export default function Telao() {
   const { width } = useWindowDimensions();
@@ -31,14 +31,14 @@ export default function Telao() {
                 {status === "antes" ? "Começa em" : status === "aberto" ? "Termina em" : "Encerrado"}
               </Text>
               <Text style={styles.relogioTempo}>
-                {status === "antes" ? formatarTempo(paraComecarMs) : status === "aberto" ? formatarTempo(restanteMs) : "🏁"}
+                {status === "antes" ? formatarTempo(paraComecarMs) : status === "aberto" ? formatarTempo(restanteMs) : "Fim"}
               </Text>
             </View>
           </View>
 
           {vencedor && (
             <View style={styles.vencedor}>
-              <Text style={styles.vencedorEmoji}>🏆</Text>
+              <Icone nome="trophy" tamanho={76} tom="verde" />
               <View>
                 <Text style={styles.vencedorLabel}>Vencedor da gincana</Text>
                 <Text style={styles.vencedorNome}>{vencedor.nome}</Text>
@@ -48,12 +48,15 @@ export default function Telao() {
           )}
 
           <View style={styles.tabela}>
-            {top.length === 0 && <Text style={styles.vazio}>Seja a primeira pessoa no ranking! 🌱</Text>}
+            {top.length === 0 && <Text style={styles.vazio}>Seja a primeira pessoa no ranking!</Text>}
             {top.map((l) => (
               <View key={l.posicao} style={[styles.linha, l.posicao <= 3 && styles.linhaTop]}>
-                <Text style={styles.posicao}>{MEDALHAS[l.posicao - 1] || `${l.posicao}º`}</Text>
+                <View style={{ width: 52 }}><Posicao n={l.posicao} tamanho={44} claro /></View>
                 <Text style={styles.nome} numberOfLines={1}>{l.nome}</Text>
-                <Text style={styles.passos}>👟 {l.passos.toLocaleString("pt-BR")}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <IconeTexto nome="footsteps" cor="#CFEDE4" tamanho={18} />
+                  <Text style={styles.passos}>{l.passos.toLocaleString("pt-BR")}</Text>
+                </View>
                 <Text style={styles.pts}>{l.pontos} pts</Text>
               </View>
             ))}
@@ -63,7 +66,7 @@ export default function Telao() {
         {/* QR para participar */}
         <View style={[styles.painelQr, largo && { flex: 1 }]}>
           <Text style={styles.qrTitulo}>Participe!</Text>
-          <Text style={styles.qrTexto}>Escaneie, faça missões, ganhe doces e concorra a uma caixa de bombom 🍫</Text>
+          <Text style={styles.qrTexto}>Escaneie, faça missões, ganhe doces e concorra a uma caixa de bombom</Text>
           <View style={styles.qrCaixa}>
             <QRCode value={site} size={largo ? 260 : 200} color={colors.primary} backgroundColor="#fff" />
           </View>

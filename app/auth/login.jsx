@@ -178,7 +178,7 @@ export default function Login() {
                 activeOpacity={0.7}
               >
                 <View style={[styles.checkbox, lembrar && styles.checkboxChecked]}>
-                  {lembrar && <Text style={styles.checkmark}>✓</Text>}
+                  {lembrar && <Ionicons name="checkmark" size={16} color={colors.primary} />}
                 </View>
                 <Text style={styles.lembrarText}>Lembrar-me</Text>
               </TouchableOpacity>

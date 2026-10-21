@@ -3,7 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Platform, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { IconeTexto, Posicao } from "../../components/Icone";
 import ModalAddMembro from "../../components/ModalAddMembro";
 import { colors } from "../../constants/colors";
 import { useGrupos } from "../../context/GruposContext";
@@ -22,14 +23,17 @@ function Avatar({ nome }) {
   );
 }
 
-function LinhaRanking({ posicao, nome, detalhe, ultima }) {
+function LinhaRanking({ posicao, nome, detalhe, ultima, souEu, icone }) {
   return (
     <View style={[styles.linha, ultima && { borderBottomWidth: 0 }]}>
-      <Text style={styles.posicao}>{posicao}º</Text>
+      <Posicao n={posicao} />
       <Avatar nome={nome} />
       <View style={{ flex: 1 }}>
-        <Text style={styles.nome}>{nome}</Text>
-        <Text style={styles.detalhe}>{detalhe}</Text>
+        <Text style={styles.nome}>{nome}{souEu ? " (você)" : ""}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+          {icone && <IconeTexto nome={icone} cor="#6A6A6A" tamanho={13} />}
+          <Text style={[styles.detalhe, { marginTop: 0 }]}>{detalhe}</Text>
+        </View>
       </View>
     </View>
   );
@@ -38,16 +42,56 @@ function LinhaRanking({ posicao, nome, detalhe, ultima }) {
 export default function Grupos() {
   const {
     grupos, grupoAtual, selecionarGrupo, membros, rankingMissoes, rankingStreak,
-    criarGrupo, entrarGrupo, recarregar, meuId,
+    criarGrupo, entrarGrupo, recarregar, meuId, carregado,
   } = useGrupos();
-  const { convite } = useLocalSearchParams();
+  const { convite, convidar } = useLocalSearchParams();
   const [modalVisivel, setModalVisivel] = useState(false);
+  const [modoModal, setModoModal] = useState(null);
   const [copiado, setCopiado] = useState(false);
+  const [destaque, setDestaque] = useState(false);
+
+  // veio da missão "Traga um amigo" / "Grupo de 3"
+  useEffect(() => {
+    if (!convidar || !carregado) return;
+    if (grupos.length === 0) {
+      setModoModal("criar");
+      setModalVisivel(true);
+    }
+    setDestaque(true);
+  }, [convidar, carregado]);
 
   // link de convite: abrir healthplus/grupos?convite=CODIGO já abre o modal preenchido
   useEffect(() => {
-    if (convite) setModalVisivel(true);
+    if (convite) {
+      setModoModal("entrar");
+      setModalVisivel(true);
+    }
   }, [convite]);
+
+  function textoConvite() {
+    const base = Platform.OS === "web" && typeof window !== "undefined" ? window.location.origin : "";
+    return base
+      ? `Entre no meu grupo "${grupoAtual.nome}" no Health Plus: ${base}/grupos?convite=${grupoAtual.codigo}`
+      : `Entre no meu grupo "${grupoAtual.nome}" no Health Plus com o código ${grupoAtual.codigo}`;
+  }
+
+  async function compartilhar() {
+    if (!grupoAtual) return;
+    const texto = textoConvite();
+    try {
+      if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title: "Health Plus", text: texto });
+        return;
+      }
+      if (Platform.OS !== "web") {
+        await Share.share({ message: texto });
+        return;
+      }
+    } catch (e) {
+      return; // a pessoa cancelou
+    }
+    await copiarConvite();
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -57,11 +101,7 @@ export default function Grupos() {
 
   async function copiarConvite() {
     if (!grupoAtual) return;
-    const base = Platform.OS === "web" && typeof window !== "undefined" ? window.location.origin : "";
-    const texto = base
-      ? `Entre no meu grupo "${grupoAtual.nome}" no Health Plus: ${base}/grupos?convite=${grupoAtual.codigo}`
-      : grupoAtual.codigo;
-    await Clipboard.setStringAsync(texto);
+    await Clipboard.setStringAsync(textoConvite());
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   }
@@ -80,8 +120,18 @@ export default function Grupos() {
             <Ionicons name="people-outline" size={48} color={colors.green3} />
             <Text style={styles.vazioTitulo}>Nenhum grupo ainda</Text>
             <Text style={styles.vazioTexto}>
-              Toque no botão + para criar um grupo ou entrar com o código de convite de um amigo.
+              Crie seu grupo para receber um código de convite, ou entre no grupo de um amigo.
             </Text>
+            <TouchableOpacity
+              style={styles.botaoCriar}
+              onPress={() => {
+                setModoModal("criar");
+                setModalVisivel(true);
+              }}
+            >
+              <Ionicons name="add-circle" size={20} color={colors.white} />
+              <Text style={styles.botaoCriarTexto}>Criar meu grupo</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
@@ -101,14 +151,28 @@ export default function Grupos() {
 
             <Text style={styles.nomeGrupo}>{grupoAtual?.nome}</Text>
 
-            <TouchableOpacity style={styles.conviteBox} onPress={copiarConvite} activeOpacity={0.8}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.conviteLabel}>Código de convite</Text>
-                <Text style={styles.conviteCodigo}>{grupoAtual?.codigo}</Text>
+            <View style={[styles.conviteCard, destaque && styles.conviteCardDestaque]}>
+              {destaque && (
+                <View style={styles.dicaMissao}>
+                  <Ionicons name="person-add" size={18} color={colors.white} />
+                  <Text style={styles.dicaMissaoTexto}>
+                    Missão: mande este código para seus amigos. Quando alguém entrar no seu grupo, você ganha os pontos!
+                  </Text>
+                </View>
+              )}
+              <Text style={styles.conviteLabel}>Seu código de convite</Text>
+              <Text style={styles.conviteCodigo}>{grupoAtual?.codigo}</Text>
+              <View style={styles.conviteBotoes}>
+                <TouchableOpacity style={styles.conviteBotao} onPress={copiarConvite} activeOpacity={0.8}>
+                  <Ionicons name={copiado ? "checkmark" : "copy-outline"} size={18} color={colors.primary} />
+                  <Text style={styles.conviteBotaoTexto}>{copiado ? "Copiado!" : "Copiar"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.conviteBotao, styles.conviteBotaoCheio]} onPress={compartilhar} activeOpacity={0.8}>
+                  <Ionicons name="share-social" size={18} color={colors.white} />
+                  <Text style={[styles.conviteBotaoTexto, { color: colors.white }]}>Compartilhar</Text>
+                </TouchableOpacity>
               </View>
-              <Ionicons name={copiado ? "checkmark" : "copy-outline"} size={20} color={colors.primary} />
-              <Text style={styles.conviteAcao}>{copiado ? "Copiado!" : "Copiar"}</Text>
-            </TouchableOpacity>
+            </View>
 
             <Text style={styles.secaoLabel}>Missões concluídas</Text>
             <View style={styles.card}>
@@ -116,8 +180,10 @@ export default function Grupos() {
                 <LinhaRanking
                   key={m.usuario_id}
                   posicao={i + 1}
-                  nome={m.usuario_id === meuId ? `${m.nome} (você)` : m.nome}
+                  nome={m.nome}
+                  souEu={m.usuario_id === meuId}
                   detalhe={`${m.missoes} ${m.missoes === 1 ? "missão concluída" : "missões concluídas"}`}
+                  icone="star"
                   ultima={i === rankingMissoes.length - 1}
                 />
               ))}
@@ -129,8 +195,10 @@ export default function Grupos() {
                 <LinhaRanking
                   key={m.usuario_id}
                   posicao={i + 1}
-                  nome={m.usuario_id === meuId ? `${m.nome} (você)` : m.nome}
-                  detalhe={`🔥 ${m.streak} ${m.streak === 1 ? "dia seguido" : "dias seguidos"}`}
+                  nome={m.nome}
+                  souEu={m.usuario_id === meuId}
+                  detalhe={`${m.streak} ${m.streak === 1 ? "dia seguido" : "dias seguidos"}`}
+                  icone="flame"
                   ultima={i === rankingStreak.length - 1}
                 />
               ))}
@@ -152,6 +220,7 @@ export default function Grupos() {
         onEntrar={entrarGrupo}
         onCriar={criarGrupo}
         codigoInicial={typeof convite === "string" ? convite : ""}
+        modoInicial={modoModal}
       />
     </View>
   );
@@ -182,12 +251,22 @@ const styles = StyleSheet.create({
   chipAtivo: { backgroundColor: colors.primary },
   chipTexto: { color: colors.primary, fontWeight: "700" },
   chipTextoAtivo: { color: colors.white },
+  conviteCard: { backgroundColor: "#EAF3DC", borderRadius: 20, padding: 16, marginBottom: 20, alignItems: "center", borderWidth: 2, borderColor: "transparent" },
+  conviteCardDestaque: { borderColor: colors.primary, backgroundColor: "#F3FAEC" },
+  dicaMissao: { flexDirection: "row", gap: 8, alignItems: "center", backgroundColor: colors.primary, borderRadius: 12, padding: 10, marginBottom: 12, alignSelf: "stretch" },
+  dicaMissaoTexto: { flex: 1, color: colors.white, fontWeight: "700", fontSize: 13, lineHeight: 18 },
+  conviteBotoes: { flexDirection: "row", gap: 10, marginTop: 12, alignSelf: "stretch" },
+  conviteBotao: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 14, paddingVertical: 12, borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.white },
+  conviteBotaoCheio: { backgroundColor: colors.primary },
+  conviteBotaoTexto: { color: colors.primary, fontWeight: "800", fontSize: 15 },
+  botaoCriar: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginTop: 18 },
+  botaoCriarTexto: { color: colors.white, fontWeight: "800", fontSize: 16 },
   conviteBox: {
     flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#EAF3DC",
     borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20,
   },
   conviteLabel: { fontSize: 12, color: "#6A6A6A", fontWeight: "600" },
-  conviteCodigo: { fontSize: 20, fontWeight: "800", color: colors.primary, letterSpacing: 1 },
+  conviteCodigo: { fontSize: 34, fontWeight: "900", color: colors.primary, letterSpacing: 3, marginTop: 2 },
   conviteAcao: { color: colors.primary, fontWeight: "700" },
   dica: { textAlign: "center", color: "#6A6A6A", fontSize: 13, marginTop: -8 },
 

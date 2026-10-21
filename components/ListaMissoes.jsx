@@ -17,6 +17,7 @@ import { colors } from "../constants/colors";
 import { INSTAGRAM, useMissoes } from "../context/MissoesContext";
 import { useUsuario } from "../context/UsuarioContext";
 import MissaoCard from "./MissaoCard";
+import Icone from "./Icone";
 
 const AJUDA_EQUIPE = {
   ativacao: "Participe de uma ativação do NEXT e mostre este código para alguém da equipe Health Plus. A missão aparece concluída na hora.",
@@ -48,7 +49,8 @@ export default function ListaMissoes({ estiloItem, soPendentes = false, limite }
       case "jardim":
         return router.push("/jardim");
       case "grupos":
-        return router.push("/grupos");
+        // abre o grupo da pessoa com o código de convite em destaque
+        return router.push({ pathname: "/grupos", params: { convidar: String(Date.now()) } });
       default:
         return router.push(`/missao/${m.acao}`);
     }
@@ -166,7 +168,10 @@ function ModalCodigoPessoal({ missao, codigo, onFechar, recarregar }) {
   return (
     <Caixa visivel={!!missao} onFechar={onFechar} titulo={missao?.titulo || ""}>
       {missao?.concluida ? (
-        <Text style={[styles.texto, { fontWeight: "800", color: colors.primary }]}>✅ Missão confirmada pela equipe!</Text>
+        <View style={{ alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <Icone nome="checkmark-circle" tamanho={64} tom="verde" />
+          <Text style={[styles.texto, { fontWeight: "800", color: colors.primary, marginBottom: 0 }]}>Missão confirmada pela equipe!</Text>
+        </View>
       ) : (
         <>
           <Text style={styles.texto}>{missao ? AJUDA_EQUIPE[missao.id] : ""}</Text>
@@ -202,7 +207,7 @@ function ModalAvaliar({ visivel, onFechar, onEnviar }) {
 
   return (
     <Caixa visivel={visivel} onFechar={onFechar} titulo="Avalie o Health Plus">
-      <Text style={styles.texto}>O que você achou do app? Sua opinião ajuda muito o nosso projeto 💚</Text>
+      <Text style={styles.texto}>O que você achou do app? Sua opinião ajuda muito o nosso projeto.</Text>
       <View style={styles.estrelas}>
         {[1, 2, 3, 4, 5].map((n) => (
           <TouchableOpacity key={n} onPress={() => { setNota(n); setErro(""); }}>

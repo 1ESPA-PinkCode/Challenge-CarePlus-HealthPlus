@@ -5,14 +5,15 @@ import BarraProgresso from "../../components/BarraProgresso";
 import TelaAtividade from "../../components/TelaAtividade";
 import { colors } from "../../constants/colors";
 import { useMissoes } from "../../context/MissoesContext";
+import Icone from "../../components/Icone";
 
 const PASSOS = [
-  { emoji: "🙆", titulo: "Pescoço", texto: "Incline a cabeça devagar para a direita e depois para a esquerda." },
-  { emoji: "🤷", titulo: "Ombros", texto: "Gire os ombros para trás em círculos lentos." },
-  { emoji: "🙌", titulo: "Braços para cima", texto: "Entrelace os dedos e estique os braços acima da cabeça." },
-  { emoji: "🧍", titulo: "Lateral", texto: "Com os braços para cima, incline o tronco para um lado e depois para o outro." },
-  { emoji: "🦵", titulo: "Pernas", texto: "Segure um pé atrás, perto do glúteo, e troque de perna na metade do tempo." },
-  { emoji: "🌬️", titulo: "Respire", texto: "Solte o corpo, sacuda as mãos e respire fundo três vezes." },
+  { icone: "person-circle-outline", titulo: "Pescoço", texto: "Incline a cabeça devagar para a direita e depois para a esquerda." },
+  { icone: "sync-outline", titulo: "Ombros", texto: "Gire os ombros para trás em círculos lentos." },
+  { icone: "arrow-up-circle-outline", titulo: "Braços para cima", texto: "Entrelace os dedos e estique os braços acima da cabeça." },
+  { icone: "swap-horizontal-outline", titulo: "Lateral", texto: "Com os braços para cima, incline o tronco para um lado e depois para o outro." },
+  { icone: "walk-outline", titulo: "Pernas", texto: "Segure um pé atrás, perto do glúteo, e troque de perna na metade do tempo." },
+  { icone: "leaf-outline", titulo: "Respire", texto: "Solte o corpo, sacuda as mãos e respire fundo três vezes." },
 ];
 const SEG = 20;
 
@@ -48,7 +49,7 @@ export default function Alongamento() {
       <View style={styles.centro}>
         {indice < 0 && (
           <>
-            <Text style={styles.emoji}>🤸</Text>
+            <Icone nome="body-outline" tamanho={120} tom="claro" />
             <Text style={styles.titulo}>2 minutos, 6 movimentos</Text>
             <Text style={styles.texto}>Faça cada movimento com calma, sem forçar. Mantenha esta tela aberta.</Text>
           </>
@@ -56,7 +57,7 @@ export default function Alongamento() {
         {passo && (
           <>
             <Text style={styles.contador}>{indice + 1} de {PASSOS.length}</Text>
-            <Text style={styles.emoji}>{passo.emoji}</Text>
+            <Icone nome={passo.icone} tamanho={120} tom="agua" />
             <Text style={styles.titulo}>{passo.titulo}</Text>
             <Text style={styles.texto}>{passo.texto}</Text>
             <Text style={styles.tempo}>{restante}s</Text>
@@ -64,7 +65,7 @@ export default function Alongamento() {
         )}
         {fim && (
           <>
-            <Text style={styles.emoji}>🌸</Text>
+            <Icone nome="flower" tamanho={120} tom="verde" />
             <Text style={styles.titulo}>Corpo renovado!</Text>
             <Text style={styles.texto}>Que bom que você parou um pouquinho pra cuidar de você.</Text>
           </>

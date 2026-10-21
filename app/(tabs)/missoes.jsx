@@ -13,7 +13,7 @@ export default function Missoes() {
       >
         <Text style={styles.titulo}>Missões do NEXT</Text>
         <Text style={styles.subtitulo}>
-          Cada missão vale pontos e um doce surpresa 🍬
+          Cada missão vale pontos e um doce surpresa
         </Text>
 
         <ListaMissoes estiloItem={styles.cardWrapper} />

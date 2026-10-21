@@ -23,7 +23,7 @@ const TINTAS = {
   girassol: { tinta: "#F7B733", borda: "#D97A1C", luz: "#FFE08A", miolo: "#7B4A22", mioloBorda: "#4A2A12" },
   margarida: { tinta: "#FFFFFF", borda: "#9DB2C9", luz: "#EEF3F9", miolo: "#F5C23E", mioloBorda: "#D58F14" },
   tulipa: { tinta: "#F27EAA", borda: "#C2356D", luz: "#FFC4D9" },
-  rosa: { tinta: "#E4475F", borda: "#9C1430", luz: "#F7A3B1" },
+  rosa: { tinta: "#EC7A8E", borda: "#C2405A", luz: "#F9C3CC" },
 };
 
 // Uma "mancha" de aquarela: duas lavagens translúcidas + borda de pigmento + traço de lápis
@@ -48,6 +48,10 @@ function petala(comp, larg, i) {
 }
 
 const FOLHA = "M0,0 C9,-15 33,-21 54,-7 C36,5 13,7 0,0 Z";
+// folha de roseira: borda serrilhada e verde-oliva
+const FOLHA_ROSA =
+  "M0,0 C4,-8 10,-13 16,-15 L18,-18 L21,-15 C26,-17 31,-17 36,-15 L39,-18 L41,-14 C46,-13 50,-10 54,-6 L58,-6 L55,-3 C49,3 40,6 31,6 L29,9 L26,6 C18,6 9,4 0,0Z";
+const TINTA_FOLHA_ROSA = { tinta: "#8BA858", borda: "#56702E", luz: "#C3D79A" };
 
 /* ---------------- cabeças ---------------- */
 
@@ -124,29 +128,51 @@ function cabecaTulipa(a) {
 }
 
 function cabecaRosa(a) {
-  const c = TINTAS.rosa;
-  const s = 0.55 + 0.45 * a;
-  const anel = (n, raio, tam, rot, abertura, tom, chave) =>
-    Array.from({ length: n }, (_, i) => {
-      const r = tam * (1 + tremor(i + chave, 1) * 0.15);
-      const d = `M${-r},2 C${-r},${-r * 0.9} ${r},${-r * 0.9} ${r},2 C${r * 0.5},${r * 0.55} ${-r * 0.5},${r * 0.55} ${-r},2Z`;
-      return (
-        <G key={`${chave}-${i}`} transform={`rotate(${i * (360 / n) + rot}) translate(0 ${-raio * abertura})`}>
-          <Mancha d={d} c={tom} forte={0.6} lapis={i % 2 === 0} luz={i % 2 ? c.luz : undefined} />
-        </G>
-      );
-    });
+  // rosa aberta em aquarela: pétalas onduladas em camadas, miolo em espiral
+  // e "fios" brancos onde o papel aparece entre as pétalas
+  const clara = { tinta: "#F4A3B0", borda: "#E0687E" };
+  const media = { tinta: "#EE7F92", borda: "#D24A64" };
+  const forte = { tinta: "#E45C74", borda: "#B8304C" };
+  const funda = { tinta: "#CF3A56", borda: "#97203A" };
+  const s = (0.55 + 0.45 * a) * 1.22;
+  const abre = 0.8 + 0.2 * a;
+  // pétala externa ondulada (aponta para cima, base no centro)
+  const ondulada = (i) => {
+    const w = 30 + tremor(i, 5) * 6;
+    const h = 40 + tremor(i, 6) * 6;
+    const o = tremor(i, 7) * 4;
+    return `M0,0 C${-w * 0.7},-4 ${-w * 1.1},${-h * 0.55} ${-w * 0.75},${-h * 0.9} C${-w * 0.5},${-h * 1.05} ${-w * 0.2},${-h * 0.92} ${o},${-h} C${w * 0.25},${-h * 0.92} ${w * 0.55},${-h * 1.06} ${w * 0.78},${-h * 0.88} C${w * 1.1},${-h * 0.55} ${w * 0.7},-4 0,0Z`;
+  };
   return (
-    <G transform={`translate(0 -18) scale(${s * 1.7})`}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <G key={`s${i}`} transform={`rotate(${i * 72 + 36})`}>
-          <Mancha d="M0,0 C-5,-8 -4,-25 0,-33 C4,-25 5,-8 0,0Z" c={TINTAS.folha} forte={0.6 * a} lapis={false} />
+    <G transform={`translate(0 -22) scale(${s * 1.12} ${s})`}>
+      {/* sépalas */}
+      {[-150, -110, 110, 150].map((ang, i) => (
+        <G key={`s${i}`} transform={`rotate(${ang}) translate(0 -14)`}>
+          <Mancha d="M0,0 C-4,-7 -3,-20 0,-27 C3,-20 4,-7 0,0Z" c={{ tinta: "#7FA850", borda: "#4E7A2C" }} forte={0.6 * a} lapis={false} />
         </G>
       ))}
-      {anel(5, 15, 15, 0, 0.6 + 0.4 * a, { tinta: "#EC6178", borda: c.borda }, 1)}
-      {anel(5, 8, 11, 36, 0.5 + 0.5 * a, c, 9)}
-      <Mancha d="M-9,1 C-10,-7 -4,-10 1,-10 C7,-9 10,-5 9,1 C8,7 3,9 -1,9 C-6,9 -9,6 -9,1Z" c={{ tinta: "#C42642", borda: "#7A0A20" }} forte={0.85} />
-      <Path d="M-5,1 C-6,-6 4,-7 5,-2 C6,3 -1,5 -2,0 C-2,-3 2,-3 2,-1" stroke="#6A0618" strokeWidth={1.2} opacity={0.6} fill="none" />
+      {/* pétalas externas, abertas como uma taça */}
+      {[-112, -84, -56, -24, 8, 40, 70, 98, 116].map((ang, i) => (
+        <G key={`e${i}`} transform={`rotate(${ang * abre}) translate(0 ${-4 * a}) scale(${(0.7 + 0.3 * a) * (Math.abs(ang) > 110 ? 0.85 : 1)} ${0.7 + 0.3 * a})`}>
+          <Mancha d={ondulada(i)} c={clara} forte={0.55} luz="#FBD3DA" borda={1.3} />
+        </G>
+      ))}
+      {/* taça: pétalas da frente, embaixo */}
+      <Mancha d="M-38,-6 C-40,10 -20,26 0,26 C20,26 40,10 38,-6 C30,2 16,6 0,6 C-16,6 -30,2 -38,-6Z" c={media} forte={0.6} luz="#F8BBC6" />
+      <Path d="M-34,-3 C-24,4 -10,7 2,7 C14,7 26,3 34,-3" stroke="#FFFFFF" strokeWidth={2.4} opacity={0.75} fill="none" strokeLinecap="round" />
+      {/* camadas do meio */}
+      <Mancha d="M-30,-10 C-30,-30 -10,-38 2,-37 C16,-36 31,-28 30,-10 C22,-18 10,-21 0,-21 C-12,-21 -22,-18 -30,-10Z" c={forte} forte={0.6} />
+      <Mancha d="M-26,-8 C-24,2 -12,10 0,10 C12,10 24,2 26,-8 C18,-4 9,-2 0,-2 C-9,-2 -18,-4 -26,-8Z" c={forte} forte={0.55} />
+      <Path d="M-24,-12 C-16,-20 -6,-23 4,-22" stroke="#FFFFFF" strokeWidth={2} opacity={0.7} fill="none" strokeLinecap="round" />
+      <Path d="M20,-6 C14,-1 6,1 -2,1" stroke="#FFFFFF" strokeWidth={1.8} opacity={0.65} fill="none" strokeLinecap="round" />
+      {/* miolo em espiral */}
+      {/* miolo: pétalas internas enroladas, com o papel branco aparecendo entre elas */}
+      <Mancha d="M-17,-8 C-18,-20 -7,-27 2,-26 C12,-25 19,-18 17,-8 C11,-12 5,-13 0,-13 C-6,-13 -12,-12 -17,-8Z" c={funda} forte={0.7} />
+      <Mancha d="M-15,-6 C-13,1 -6,5 1,5 C8,5 14,1 16,-6 C10,-3 5,-2 0,-2 C-5,-2 -10,-3 -15,-6Z" c={forte} forte={0.7} />
+      <Mancha d="M-9,-10 C-8,-17 -1,-20 5,-18 C10,-16 11,-11 9,-8 C6,-10 2,-11 -1,-11 C-4,-11 -7,-11 -9,-10Z" c={{ tinta: "#B8243F", borda: "#7A0F26" }} forte={0.8} lapis={false} />
+      <Path d="M-15,-9 C-10,-12 -4,-13 1,-13 C7,-13 12,-12 16,-9" stroke="#FFFFFF" strokeWidth={1.8} opacity={0.75} fill="none" strokeLinecap="round" />
+      <Path d="M-8,-9 C-4,-11 2,-11 8,-8" stroke="#FFFFFF" strokeWidth={1.4} opacity={0.7} fill="none" strokeLinecap="round" />
+      <Path d="M-13,-4 C-7,-1 7,-1 14,-5" stroke="#FFFFFF" strokeWidth={1.4} opacity={0.6} fill="none" strokeLinecap="round" />
     </G>
   );
 }
@@ -250,12 +276,14 @@ export default function FlorAquarela({ tipo = "girassol", target = 1, duration =
   const brilhando = animar && dtBrilho >= 0 && dtBrilho < 1.4;
   const desenharCabeca = CABECAS[tipo] || CABECAS.girassol;
 
+  const ehRosa = tipo === "rosa";
   const folhaEm = (p, lado, y, escala, i) =>
     p > 0 && (
       <G key={y} transform={`translate(${BX} ${y}) scale(${lado * escala * p} ${escala * p}) rotate(${-10 + Math.sin(t * 1.6 + y) * 3})`}>
-        <Mancha d={FOLHA} c={TINTAS.folha} luz={TINTAS.folha.luz} />
-        <Path d="M2,-1 C17,-6 33,-8 50,-6" stroke={TINTAS.folha.borda} strokeWidth={1.1} fill="none" opacity={0.55} />
-        <Path d="M14,-4 L20,-12 M26,-6 L33,-14 M20,-3 L26,3 M33,-5 L39,1" stroke={TINTAS.folha.borda} strokeWidth={0.7} opacity={0.4} />
+        <Mancha d={ehRosa ? FOLHA_ROSA : FOLHA} c={ehRosa ? TINTA_FOLHA_ROSA : TINTAS.folha} luz={ehRosa ? TINTA_FOLHA_ROSA.luz : TINTAS.folha.luz} />
+        <Path d="M2,-1 C17,-5 33,-6 52,-5" stroke={ehRosa ? TINTA_FOLHA_ROSA.borda : TINTAS.folha.borda} strokeWidth={1.1} fill="none" opacity={0.55} />
+        <Path d="M14,-3 L20,-11 M26,-4 L33,-12 M20,-2 L26,4 M33,-4 L39,2" stroke={ehRosa ? TINTA_FOLHA_ROSA.borda : TINTAS.folha.borda} strokeWidth={0.7} opacity={0.4} />
+        {ehRosa && <Path d="M10,-6 C18,-10 28,-11 36,-9" stroke="#FFFFFF" strokeWidth={1.6} opacity={0.45} fill="none" strokeLinecap="round" />}
       </G>
     );
 
@@ -331,7 +359,7 @@ export default function FlorAquarela({ tipo = "girassol", target = 1, duration =
             {/* caule: traço de tinta com borda e luz */}
             {(altura > 2 || broto > 0) && (
               <G>
-                <Path d={caule} stroke={TINTAS.caule.tinta} strokeWidth={8 + 4 * fase(g, 0.2, 1)} strokeLinecap="round" fill="none" opacity={0.8} />
+                <Path d={caule} stroke={ehRosa ? "#5E8A36" : TINTAS.caule.tinta} strokeWidth={8 + 4 * fase(g, 0.2, 1)} strokeLinecap="round" fill="none" opacity={0.8} />
                 <Path d={caule} stroke={TINTAS.caule.borda} strokeWidth={1.2} strokeLinecap="round" fill="none" opacity={0.55} transform="translate(3 0)" />
                 <Path d={caule} stroke="#C4E59A" strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.45} transform="translate(-2 0)" />
               </G>

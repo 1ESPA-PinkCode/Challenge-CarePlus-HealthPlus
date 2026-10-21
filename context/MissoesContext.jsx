@@ -12,8 +12,8 @@ export const INSTAGRAM_URL = "https://www.instagram.com/healthplusnext/";
 // Textos e ícones de cada missão. Pontos, metas e códigos vêm do banco.
 // acao: o que acontece ao tocar no botão da missão
 export const CATALOGO_MISSOES = [
-  { id: "qr_renmap", tom: "verde",   icon: "qr-code-outline",       titulo: "Caça ao QR code",       desc: "Encontre o QR code no estande do RENMAP e escaneie com a câmera", unidade: "QR code",   acao: "codigo",      botao: "Validar" },
-  { id: "ativacao", tom: "amarelo",    icon: "flash-outline",         titulo: "Bora se ativar!", desc: "Participe da ativação do medGrip, nossa IC no NEXT, e ganhe o código da equipe", unidade: "ativação", acao: "equipe", botao: "Meu código" },
+  { id: "qr_renmap", tom: "verde",   icon: "qr-code-outline",       titulo: "Caça ao QR code",       desc: "Encontre o QR code no estande do medGrip (mesa 20) e escaneie com a câmera", unidade: "QR code",   acao: "codigo",      botao: "Validar" },
+  { id: "ativacao", tom: "amarelo",    icon: "flash-outline",         titulo: "Bora se ativar!", desc: "Participe da ativação do medGrip, nossa IC na mesa 20, e mostre seu código para a equipe", unidade: "ativação", acao: "equipe", botao: "Meu código" },
   { id: "story", tom: "agua",       icon: "logo-instagram",        titulo: "Mostra pro mundo",      desc: `Poste um story marcando a @fiap e o ${INSTAGRAM}`,                  unidade: "story",     acao: "equipe",      botao: "Meu código" },
   { id: "agua", tom: "petroleo",        icon: "water-outline",         titulo: "Hidratação no evento",  desc: "Beba 1 litro de água: 4 copos de 250 ml",                          unidade: "copos",     acao: "registrar",   botao: "+1 copo" },
   { id: "respira", tom: "lima",     icon: "leaf-outline",          titulo: "Respira com a Bloom",   desc: "1 minuto de respiração guiada para recarregar",                    unidade: "minuto",    acao: "respira",     botao: "Começar" },

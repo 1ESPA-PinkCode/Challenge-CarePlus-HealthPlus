@@ -22,12 +22,12 @@ import Icone from "./Icone";
 
 const AJUDA_EQUIPE = {
   ativacao:
-    "1. Vá até o estande do medGrip, nossa iniciação científica aqui no NEXT.\n2. Participe da ativação com a nossa equipe.\n3. No final, mostre o código abaixo para alguém da equipe. Assim que confirmarem, a missão é concluída na hora.",
+    "1. Vá até o estande do medGrip, nossa iniciação científica, na mesa 20.\n2. Participe da ativação com a nossa equipe.\n3. No final, mostre o código abaixo para alguém da equipe. Assim que confirmarem, a missão é concluída na hora.",
   story: `1. Poste um story marcando a @fiap e o ${INSTAGRAM}.\n2. Mostre o story e o código abaixo no estande do Health Plus.`,
 };
 
 const AJUDA_CODIGO = {
-  qr_renmap: "Vá até o estande do RENMAP, aponte a câmera do celular para o QR code e toque no link. Se preferir, digite o código que aparece embaixo do QR.",
+  qr_renmap: "1. Vá até o estande do medGrip, na mesa 20.\n2. Aponte a câmera do celular para o QR code e toque no link.\n3. Se preferir, digite aqui o código que aparece embaixo do QR.",
 };
 
 export default function ListaMissoes({ estiloItem, soPendentes = false, limite }) {

@@ -1,4 +1,4 @@
-// app/qr.jsx — destino do QR code do RENMAP (…/qr?c=CODIGO)
+// app/qr.jsx — destino do QR code do medGrip (…/qr?c=CODIGO)
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -46,7 +46,7 @@ export default function QR() {
           </Text>
           <Text style={styles.texto}>
             {estado === "ok"
-              ? "Missão concluída. Obrigada por visitar o RENMAP!"
+              ? "Missão concluída. Obrigada por visitar o medGrip!"
               : estado === "ja"
               ? "Essa missão já está concluída. Bora para a próxima!"
               : erro}

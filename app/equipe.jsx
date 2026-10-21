@@ -187,7 +187,7 @@ export default function Equipe() {
         {/* Código do QR */}
         {codigos.map((c) => (
           <View key={c.id} style={styles.card}>
-            <Text style={styles.texto}>Código impresso no QR do RENMAP</Text>
+            <Text style={styles.texto}>Código impresso no QR do medGrip</Text>
             <Text style={styles.codigo}>{c.codigo}</Text>
           </View>
         ))}

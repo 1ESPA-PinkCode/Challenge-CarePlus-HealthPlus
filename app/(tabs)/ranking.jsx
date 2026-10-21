@@ -4,6 +4,8 @@ import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../../constants/colors";
 import { formatarTempo, useEvento, useRanking } from "../../lib/evento";
+import { pedirPermissaoNotificacao, permissaoNotificacao } from "../../lib/notificacoes";
+import { useState } from "react";
 import Icone, { IconeTexto, Posicao } from "../../components/Icone";
 
 
@@ -11,6 +13,7 @@ export default function Ranking() {
   const router = useRouter();
   const { status, restanteMs, paraComecarMs } = useEvento();
   const { linhas } = useRanking(10, 10000);
+  const [permissao, setPermissao] = useState(permissaoNotificacao());
   const eu = linhas.find((l) => l.sou_eu);
   const top = linhas.filter((l) => l.posicao <= 10);
   const acima = eu && eu.posicao > 1 ? linhas.find((l) => l.posicao === eu.posicao - 1) : null;
@@ -48,9 +51,22 @@ export default function Ranking() {
 
       <TouchableOpacity style={styles.passosBtn} onPress={() => router.push("/passos")} activeOpacity={0.85}>
         <Ionicons name="footsteps" size={22} color={colors.white} />
-        <Text style={styles.passosTexto}>Contar passos (1 ponto a cada 100)</Text>
+        <Text style={styles.passosTexto}>Seus passos contam sozinhos com o app aberto</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.white} />
       </TouchableOpacity>
+
+      {status !== "encerrado" && permissao === "default" && (
+        <TouchableOpacity style={styles.avisarBtn} onPress={async () => setPermissao(await pedirPermissaoNotificacao())} activeOpacity={0.85}>
+          <Icone nome="notifications" tamanho={36} tom="amarelo" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.avisarTitulo}>Me avise se eu ganhar</Text>
+            <Text style={styles.avisarSub}>Receba uma notificação no celular quando a gincana acabar</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+      {permissao === "granted" && status !== "encerrado" && (
+        <Text style={styles.avisarOk}>Notificação ativada: se você ganhar, avisamos aqui no celular.</Text>
+      )}
 
       <View style={styles.card}>
         {top.length === 0 && <Text style={styles.vazio}>Ninguém pontuou ainda. Comece pelas missões!</Text>}
@@ -73,6 +89,10 @@ export default function Ranking() {
 }
 
 const styles = StyleSheet.create({
+  avisarBtn: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 2, borderColor: "#F2B632", borderRadius: 16, padding: 12, marginBottom: 14, backgroundColor: colors.white },
+  avisarTitulo: { fontSize: 15, fontWeight: "900", color: "#1A1A1A" },
+  avisarSub: { fontSize: 12, color: "#6A6A6A", marginTop: 2 },
+  avisarOk: { fontSize: 13, color: colors.primary, fontWeight: "700", textAlign: "center", marginBottom: 12 },
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: 16, paddingBottom: 40 },
   tituloBox: { backgroundColor: colors.primary, borderRadius: 30, paddingVertical: 18, paddingHorizontal: 24, marginBottom: 14 },

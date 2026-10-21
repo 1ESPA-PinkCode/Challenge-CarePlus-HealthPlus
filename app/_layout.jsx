@@ -4,6 +4,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GruposProvider } from "../context/GruposContext";
 import { JardimProvider } from "../context/JardimContext";
 import { MissoesProvider } from "../context/MissoesContext";
+import { PassosProvider } from "../context/PassosContext";
+import AvisoVencedor from "../components/AvisoVencedor";
 import { UsuarioProvider } from "../context/UsuarioContext";
 import { ChatProvider } from "../contexts/ChatContext";
 import { GemsProvider } from "../contexts/GemsContext";
@@ -17,6 +19,7 @@ export default function RootLayout() {
           <GemsProvider>
             <MissoesProvider>
               <GruposProvider>
+                <PassosProvider>
                 <ChatProvider>
                   <StatusBar style="light" />
                   <Stack screenOptions={{ headerShown: false }}>
@@ -30,7 +33,9 @@ export default function RootLayout() {
                     <Stack.Screen name="auth/cadastro" />
                   </Stack>
                   <AvisoConquista />
+                  <AvisoVencedor />
                 </ChatProvider>
+                </PassosProvider>
               </GruposProvider>
             </MissoesProvider>
           </GemsProvider>

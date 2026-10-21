@@ -113,7 +113,7 @@ export default function Inicio() {
         <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/passos")} activeOpacity={0.85}>
           <Icone nome="footsteps" tamanho={50} tom="agua" />
           <Text style={styles.gincanaTitulo}>{(usuario?.passos ?? 0).toLocaleString("pt-BR")} passos</Text>
-          <Text style={styles.gincanaSub}>Contar passos</Text>
+          <Text style={styles.gincanaSub}>Contando sozinho</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.insta} onPress={() => Linking.openURL(INSTAGRAM_URL)} activeOpacity={0.85}>

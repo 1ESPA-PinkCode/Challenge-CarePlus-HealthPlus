@@ -17,6 +17,7 @@ export function PassosProvider({ children }) {
   const userId = perfil?.id;
   const [estado, setEstado] = useState("parado"); // parado | aguardando_toque | contando | sem_sensor | negado
   const [sessao, setSessao] = useState(0);
+  const [detalhe, setDetalhe] = useState("");
   const naoEnviados = useRef(0);
   const contador = useRef(null);
   const assinaturaNativa = useRef(null);
@@ -58,7 +59,14 @@ export function PassosProvider({ children }) {
       setEstado("contando");
     } catch (e) {
       contador.current = null;
-      setEstado((e.message || "").toLowerCase().includes("negad") ? "negado" : "sem_sensor");
+      const msg = (e && (e.message || e.name || String(e))) || "";
+      setDetalhe(msg);
+      const temApiPermissao =
+        typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function";
+      if (msg.toLowerCase().includes("negad") || msg.includes("denied")) setEstado("negado");
+      // iPhone: o pedido falhou (ex.: navegador embutido de outro app) — dá para tentar de novo com o botão
+      else if (temApiPermissao) setEstado("tentar_de_novo");
+      else setEstado("sem_sensor");
     }
   }
 
@@ -129,7 +137,7 @@ export function PassosProvider({ children }) {
   const total = (perfil?.passos ?? 0) + naoEnviados.current;
 
   return (
-    <PassosContext.Provider value={{ estado, sessao, total, ativar }}>{children}</PassosContext.Provider>
+    <PassosContext.Provider value={{ estado, sessao, total, ativar, detalhe }}>{children}</PassosContext.Provider>
   );
 }
 

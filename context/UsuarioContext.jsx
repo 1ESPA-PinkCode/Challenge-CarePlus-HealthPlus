@@ -78,6 +78,21 @@ export function UsuarioProvider({ children }) {
 
   const recarregarPerfil = () => carregarPerfil(sessao?.user?.id);
 
+  // mantém gemas/pontos atualizados (a equipe pode descontar ou dar missões a qualquer momento)
+  useEffect(() => {
+    const uid = sessao?.user?.id;
+    if (!uid) return;
+    const t = setInterval(() => carregarPerfil(uid), 12000);
+    const aoVoltar = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") carregarPerfil(uid);
+    };
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(t);
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", aoVoltar);
+    };
+  }, [sessao?.user?.id, carregarPerfil]);
+
   // Compatibilidade com as telas existentes (usuario.nome, usuario.foto)
   const usuario = perfil ? { ...perfil, foto: perfil.foto_url } : null;
   async function salvarUsuario(dados) {

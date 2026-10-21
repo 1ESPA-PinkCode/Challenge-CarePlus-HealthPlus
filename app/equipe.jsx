@@ -17,9 +17,6 @@ export default function Equipe() {
   const { perfil, carregando } = useUsuario();
   const [resumo, setResumo] = useState(null);
   const [codigos, setCodigos] = useState([]);
-  const [busca, setBusca] = useState("");
-  const [doce, setDoce] = useState(null);
-  const [msg, setMsg] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [codPessoa, setCodPessoa] = useState("");
   const [pessoa, setPessoa] = useState(null);
@@ -39,26 +36,13 @@ export default function Equipe() {
     }
   }, [perfil?.equipe]);
 
-  async function buscarDoce() {
-    setMsg("");
-    setDoce(null);
-    if (busca.trim().length < 4) return setMsg("Digite o código do cupom.");
+  async function venderDoce() {
     setOcupado(true);
-    const { data, error } = await supabase.rpc("equipe_buscar_doce", { p_codigo: busca });
+    const { data, error } = await supabase.rpc("equipe_vender_doce", { p_codigo: pessoa?.codigo_pessoal });
     setOcupado(false);
-    if (error) return setMsg(mensagemErro(error));
-    if (!data?.length) return setMsg("Cupom não encontrado.");
-    setDoce(data[0]);
-  }
-
-  async function entregar() {
-    setOcupado(true);
-    const { data, error } = await supabase.rpc("equipe_entregar_doce", { p_codigo: doce?.codigo });
-    setOcupado(false);
-    if (error) return setMsg(mensagemErro(error));
-    setMsg(data ? "Doce entregue!" : "Esse cupom já tinha sido usado.");
-    setDoce(null);
-    setBusca("");
+    if (error) return setMsgPessoa(mensagemErro(error));
+    setMsgPessoa(`Doce entregue para ${pessoa?.nome}! Ficou com ${data} gemas.`);
+    setPessoa((p) => (p ? { ...p, gemas: data, doces: (p.doces || 0) + 1 } : p));
     carregar();
   }
 
@@ -109,7 +93,8 @@ export default function Equipe() {
     <TelaAtividade titulo="Equipe">
       <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
         {/* Dar missão (ativação / story) */}
-        <Secao icone="star" tom="amarelo">Confirmar medGrip ou story</Secao>
+        <Secao icone="person" tom="amarelo">Atender pessoa</Secao>
+        <Text style={styles.ajuda}>Peça o código que aparece no app da pessoa (aba de doces ou na missão).</Text>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -130,6 +115,26 @@ export default function Equipe() {
         {pessoa && (
           <View style={styles.card}>
             <Text style={styles.doceNome}>{pessoa.nome}</Text>
+
+            {/* doces */}
+            <View style={styles.saldoLinha}>
+              <Text style={styles.saldoTexto}>{pessoa.gemas} gemas</Text>
+              <Text style={styles.saldoSub}>
+                {pessoa.doces || 0} {pessoa.doces === 1 ? "doce pego" : "doces pegos"} · 1 doce = {pessoa.preco} gemas
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.botao, styles.botaoIcone, styles.botaoDoce, pessoa.gemas < pessoa.preco && styles.botaoOff]}
+              onPress={venderDoce}
+              disabled={ocupado || pessoa.gemas < pessoa.preco}
+            >
+              <Ionicons name="ice-cream-outline" size={18} color={colors.white} />
+              <Text style={styles.botaoTexto}>
+                {pessoa.gemas < pessoa.preco ? `Faltam ${pessoa.preco - pessoa.gemas} gemas para um doce` : `Entregar doce (−${pessoa.preco} gemas)`}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.subtitulo}>Confirmar missões</Text>
             {[
               ["ativacao", "Participou do medGrip", "flash"],
               ["story", "Postou o story", "logo-instagram"],
@@ -150,40 +155,6 @@ export default function Equipe() {
         )}
         {msgPessoa ? <Text style={styles.msg}>{msgPessoa}</Text> : null}
 
-        {/* Entregar doce */}
-        <Secao icone="gift" tom="agua">Entregar doce</Secao>
-        <View style={styles.linhaBusca}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Código do cupom"
-            placeholderTextColor="#A8A8A8"
-            autoCapitalize="characters"
-            value={busca}
-            onChangeText={(t) => {
-              setBusca(t);
-              setMsg("");
-            }}
-            onSubmitEditing={buscarDoce}
-          />
-          <TouchableOpacity style={styles.botaoPeq} onPress={buscarDoce} disabled={ocupado}>
-            <Text style={styles.botaoTexto}>Buscar</Text>
-          </TouchableOpacity>
-        </View>
-        {doce && (
-          <View style={[styles.card, doce.entregue && { borderColor: "#E57373" }]}>
-            <Text style={styles.doceNome}>{doce.nome}</Text>
-            <Text style={styles.texto}>{nomeMissao(doce.missao_id)} · cupom {doce.codigo}</Text>
-            {doce.entregue ? (
-              <Text style={styles.erro}>Este cupom JÁ FOI USADO.</Text>
-            ) : (
-              <TouchableOpacity style={styles.botao} onPress={entregar} disabled={ocupado}>
-                <Text style={styles.botaoTexto}>Confirmar entrega</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        {msg ? <Text style={styles.msg}>{msg}</Text> : null}
-
         {/* Código do QR */}
         {codigos.map((c) => (
           <View key={c.id} style={styles.card}>
@@ -201,7 +172,7 @@ export default function Equipe() {
                 ["Participantes", resumo.participantes],
                 ["Missões feitas", resumo.missoes],
                 ["Doces entregues", resumo.doces],
-                ["Doces a entregar", resumo.doces_pend],
+                ["Gemas em circulação", resumo.gemas_saldo],
                 ["Nota do app", resumo.nota_media ?? "–"],
               ].map(([l, v]) => (
                 <View key={l} style={styles.stat}>
@@ -231,6 +202,13 @@ function Secao({ icone, tom = "verde", children }) {
 }
 
 const styles = StyleSheet.create({
+  ajuda: { fontSize: 13, color: "#6A6A6A", marginBottom: 8 },
+  saldoLinha: { backgroundColor: "#FBF1B8", borderRadius: 12, padding: 10 },
+  saldoTexto: { fontSize: 22, fontWeight: "900", color: "#3A4A1F" },
+  saldoSub: { fontSize: 13, color: "#5A6B2F", fontWeight: "700" },
+  botaoDoce: { backgroundColor: "#F2B632" },
+  botaoOff: { opacity: 0.45 },
+  subtitulo: { fontSize: 14, fontWeight: "800", color: "#8A8A8A", marginTop: 6 },
   secaoLinha: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14, marginBottom: 10 },
   secaoTexto: { fontSize: 18, fontWeight: "900", color: colors.primary },
   botaoIcone: { flexDirection: "row", justifyContent: "center", gap: 8 },

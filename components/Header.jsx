@@ -5,7 +5,7 @@ import { useGemas } from "../contexts/GemsContext";
 
 export default function Header() {
   const insets = useSafeAreaInsets();
-  const { pontos: gemas } = useGemas();
+  const { gemas } = useGemas();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 12 }]}>

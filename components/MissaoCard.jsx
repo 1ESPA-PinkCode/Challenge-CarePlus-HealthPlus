@@ -56,7 +56,7 @@ export default function MissaoCard({
       {/* rodapé: pílula de gemas + ação */}
       <View style={styles.rodape}>
         <View style={styles.gemaPill}>
-          <Text style={styles.gemaText}> {gemas} pts</Text>
+          <Text style={styles.gemaText}> {gemas} gemas</Text>
           <Image
             source={require("../assets/images/gema.png")}
             style={styles.gema}

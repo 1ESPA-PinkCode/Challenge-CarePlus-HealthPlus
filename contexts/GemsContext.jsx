@@ -1,4 +1,4 @@
-// contexts/GemsContext.jsx — pontos (gemas) e cupons de doce, vindos do banco
+// contexts/GemsContext.jsx — gemas (saldo para comprar doces) e pontos do ranking
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useUsuario } from "../context/UsuarioContext";
 import { supabase } from "../lib/supabase";
@@ -7,20 +7,29 @@ const GemsContext = createContext(null);
 
 export function GemsProvider({ children }) {
   const { perfil, recarregarPerfil } = useUsuario();
-  const [doces, setDoces] = useState([]);
+  const [compras, setCompras] = useState([]);
+  const [preco, setPreco] = useState(20);
   const userId = perfil?.id;
 
   const carregarDoces = useCallback(async () => {
+    supabase
+      .from("evento")
+      .select("preco_doce")
+      .eq("id", 1)
+      .single()
+      .then(({ data }) => data?.preco_doce && setPreco(data.preco_doce));
     if (!userId) {
-      setDoces([]);
+      setCompras([]);
       return;
     }
     const { data } = await supabase
       .from("doces")
-      .select("missao_id, codigo, entregue, criado_em")
+      .select("codigo, entregue_em, criado_em")
       .eq("usuario_id", userId)
+      .eq("entregue", true)
       .order("criado_em", { ascending: false });
-    setDoces(data || []);
+    setCompras(data || []);
+    recarregarPerfil();
   }, [userId]);
 
   useEffect(() => {
@@ -30,10 +39,12 @@ export function GemsProvider({ children }) {
   return (
     <GemsContext.Provider
       value={{
-        gemas: perfil?.gemas ?? 0,
-        pontos: (perfil?.gemas ?? 0) + Math.floor((perfil?.passos ?? 0) / 100),
+        gemas: perfil?.gemas ?? 0, // saldo: sobe com missões, desce ao comprar doce
+        gemasGanhas: perfil?.gemas_ganhas ?? perfil?.gemas ?? 0,
+        pontos: (perfil?.gemas_ganhas ?? perfil?.gemas ?? 0) + Math.floor((perfil?.passos ?? 0) / 100), // ranking
+        preco,
+        compras,
         addGemas: recarregarPerfil,
-        doces,
         carregarDoces,
       }}
     >

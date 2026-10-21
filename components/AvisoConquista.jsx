@@ -1,6 +1,7 @@
 // components/AvisoConquista.jsx — comemoração ao concluir uma missão
 import { useRouter } from "expo-router";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import FogosArtificio from "./FogosArtificio";
 import { colors } from "../constants/colors";
 import { useMissoes } from "../context/MissoesContext";
 import Icone from "./Icone";
@@ -16,10 +17,13 @@ export default function AvisoConquista() {
           <Icone nome="flower" tamanho={84} tom="verde" />
           <Text style={styles.titulo}>Missão concluída!</Text>
           <Text style={styles.missao}>{aviso?.titulo}</Text>
-          <Text style={styles.pontos}>+{aviso?.gemas} pontos</Text>
+          <View style={styles.ganhoLinha}>
+            <Text style={styles.pontos}>+{aviso?.gemas}</Text>
+            <Image source={require("../assets/images/gema.png")} style={styles.gema} resizeMode="contain" />
+          </View>
           <View style={styles.doce}>
-            <Icone nome="gift" tamanho={36} tom="branco" />
-            <Text style={[styles.doceTexto, { flex: 1 }]}>Você ganhou um doce surpresa! Retire no estande do Health Plus.</Text>
+            <Icone nome="gift" tamanho={36} tom="verde" />
+            <Text style={[styles.doceTexto, { flex: 1 }]}>Junte gemas e troque por doces na banca do Health Plus!</Text>
           </View>
           <TouchableOpacity
             style={styles.botao}
@@ -28,18 +32,21 @@ export default function AvisoConquista() {
               router.push("/recompensas");
             }}
           >
-            <Text style={styles.botaoTexto}>Ver meu cupom</Text>
+            <Text style={styles.botaoTexto}>Ver minhas gemas</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={fecharAviso} style={{ paddingVertical: 10 }}>
             <Text style={styles.continuar}>Continuar</Text>
           </TouchableOpacity>
         </View>
+        <FogosArtificio ativo={!!aviso} />
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  ganhoLinha: { flexDirection: "row", alignItems: "center", gap: 8 },
+  gema: { width: 40, height: 40 },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 28 },
   card: { backgroundColor: colors.white, borderRadius: 24, padding: 24, alignItems: "center" },
   emoji: { fontSize: 56 },

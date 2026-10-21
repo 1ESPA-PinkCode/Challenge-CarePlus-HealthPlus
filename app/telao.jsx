@@ -38,7 +38,7 @@ export default function Telao() {
 
           {vencedor && (
             <View style={styles.vencedor}>
-              <Icone nome="trophy" tamanho={76} tom="verde" />
+              <Icone nome="trophy" tamanho={80} tom="amarelo" />
               <View>
                 <Text style={styles.vencedorLabel}>Vencedor da gincana</Text>
                 <Text style={styles.vencedorNome}>{vencedor.nome}</Text>

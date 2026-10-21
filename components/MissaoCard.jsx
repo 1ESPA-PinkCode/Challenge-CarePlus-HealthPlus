@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../constants/colors";
 import BarraProgresso from "./BarraProgresso";
+import Icone from "./Icone";
 
 /**
  * Card de missão reutilizável.
@@ -26,6 +27,7 @@ export default function MissaoCard({
   gemas = 0,
   feita = false,
   botao = "Registrar",
+  tom = "agua",
   onRegistrar,
 }) {
   const progresso = meta > 0 ? atual / meta : 0;
@@ -35,9 +37,7 @@ export default function MissaoCard({
     <View style={styles.card}>
       {/* topo: ícone + título/descrição */}
       <View style={styles.topo}>
-        <View style={styles.iconBox}>
-          <Ionicons name={icon} size={26} color={colors.white} />
-        </View>
+        <Icone nome={icon} tamanho={56} tom={tom} />
         <View style={{ flex: 1 }}>
           <Text style={styles.titulo}>{titulo}</Text>
           <Text style={styles.desc}>{desc}</Text>

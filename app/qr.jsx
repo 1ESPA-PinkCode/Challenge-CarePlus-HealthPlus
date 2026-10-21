@@ -40,7 +40,7 @@ export default function QR() {
         <ActivityIndicator color={colors.white} size="large" />
       ) : (
         <View style={styles.card}>
-          <Icone nome={estado === "erro" ? "alert-circle" : "qr-code"} tamanho={90} tom={estado === "erro" ? "amarelo" : "verde"} />
+          <Icone nome={estado === "erro" ? "alert-circle" : "qr-code"} tamanho={90} tom={estado === "erro" ? "amarelo" : "agua"} />
           <Text style={styles.titulo}>
             {estado === "ok" ? "QR code encontrado!" : estado === "ja" ? "Você já achou este QR!" : "Ops!"}
           </Text>

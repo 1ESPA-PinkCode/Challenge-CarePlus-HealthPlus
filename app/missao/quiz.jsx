@@ -60,7 +60,7 @@ export default function Quiz() {
     return (
       <TelaAtividade titulo="Quiz de autocuidado">
         <View style={styles.centro}>
-          <Icone nome={resultado === "ganhou" ? "trophy" : "leaf"} tamanho={110} tom={resultado === "ganhou" ? "verde" : "claro"} />
+          <Icone nome={resultado === "ganhou" ? "trophy" : "leaf"} tamanho={110} tom={resultado === "ganhou" ? "amarelo" : "menta"} />
           <Text style={styles.titulo}>{resultado === "ganhou" ? "Acertou tudo!" : `Você acertou ${acertos} de 3`}</Text>
           <Text style={styles.texto}>
             {resultado === "ganhou" ? "Você manda bem no autocuidado!" : "Quase! Tente de novo com novas perguntas."}

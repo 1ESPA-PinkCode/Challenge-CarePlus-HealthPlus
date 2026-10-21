@@ -106,12 +106,12 @@ export default function Inicio() {
       <TituloSecao>Gincana NEXT</TituloSecao>
       <View style={styles.gincana}>
         <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/ranking")} activeOpacity={0.85}>
-          <Icone nome="trophy" tamanho={46} tom="verde" />
+          <Icone nome="trophy" tamanho={50} tom="amarelo" />
           <Text style={styles.gincanaTitulo}>{pontos} pontos</Text>
           <Text style={styles.gincanaSub}>Ver ranking</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.gincanaCard} onPress={() => router.push("/passos")} activeOpacity={0.85}>
-          <Icone nome="footsteps" tamanho={46} tom="agua" />
+          <Icone nome="footsteps" tamanho={50} tom="agua" />
           <Text style={styles.gincanaTitulo}>{(usuario?.passos ?? 0).toLocaleString("pt-BR")} passos</Text>
           <Text style={styles.gincanaSub}>Contar passos</Text>
         </TouchableOpacity>

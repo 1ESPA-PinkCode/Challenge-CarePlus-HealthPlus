@@ -109,11 +109,11 @@ export default function Equipe() {
     <TelaAtividade titulo="Equipe">
       <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
         {/* Dar missão (ativação / story) */}
-        <Secao icone="star">Confirmar ativação ou story</Secao>
+        <Secao icone="star" tom="amarelo">Confirmar ativação ou story</Secao>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
-            placeholder="Código da pessoa (#K7P2)"
+            placeholder="Código (#K7P2)"
             placeholderTextColor="#A8A8A8"
             autoCapitalize="characters"
             value={codPessoa}
@@ -151,7 +151,7 @@ export default function Equipe() {
         {msgPessoa ? <Text style={styles.msg}>{msgPessoa}</Text> : null}
 
         {/* Entregar doce */}
-        <Secao icone="gift">Entregar doce</Secao>
+        <Secao icone="gift" tom="agua">Entregar doce</Secao>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -195,7 +195,7 @@ export default function Equipe() {
         {/* Resumo */}
         {resumo && (
           <>
-            <Secao icone="stats-chart">Resumo ao vivo</Secao>
+            <Secao icone="stats-chart" tom="lima">Resumo ao vivo</Secao>
             <View style={styles.grade}>
               {[
                 ["Participantes", resumo.participantes],
@@ -221,10 +221,10 @@ export default function Equipe() {
   );
 }
 
-function Secao({ icone, children }) {
+function Secao({ icone, tom = "verde", children }) {
   return (
     <View style={styles.secaoLinha}>
-      <Icone nome={icone} tamanho={30} tom="verde" />
+      <Icone nome={icone} tamanho={34} tom={tom} />
       <Text style={styles.secaoTexto}>{children}</Text>
     </View>
   );

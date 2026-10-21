@@ -11,17 +11,17 @@ export const INSTAGRAM = "@healthplusnext";
 // Textos e ícones de cada missão. Pontos, metas e códigos vêm do banco.
 // acao: o que acontece ao tocar no botão da missão
 export const CATALOGO_MISSOES = [
-  { id: "qr_renmap",   icon: "qr-code-outline",       titulo: "Caça ao QR code",       desc: "Encontre o QR code no estande do RENMAP e escaneie com a câmera", unidade: "QR code",   acao: "codigo",      botao: "Validar" },
-  { id: "ativacao",    icon: "flash-outline",         titulo: "Bora se ativar!",       desc: "Participe de uma ativação do NEXT e mostre seu código para a equipe", unidade: "ativação", acao: "equipe", botao: "Meu código" },
-  { id: "story",       icon: "logo-instagram",        titulo: "Mostra pro mundo",      desc: `Poste um story marcando a @fiap e o ${INSTAGRAM}`,                  unidade: "story",     acao: "equipe",      botao: "Meu código" },
-  { id: "agua",        icon: "water-outline",         titulo: "Hidratação no evento",  desc: "Beba 1 litro de água: 4 copos de 250 ml",                          unidade: "copos",     acao: "registrar",   botao: "+1 copo" },
-  { id: "respira",     icon: "leaf-outline",          titulo: "Respira com a Bloom",   desc: "1 minuto de respiração guiada para recarregar",                    unidade: "minuto",    acao: "respira",     botao: "Começar" },
-  { id: "alongamento", icon: "body-outline",          titulo: "Alongamento relâmpago", desc: "2 minutos de alongamento guiado, aí mesmo onde você está",         unidade: "sessão",    acao: "alongamento", botao: "Começar" },
-  { id: "quiz",        icon: "bulb-outline",          titulo: "Quiz de autocuidado",   desc: "Acerte 3 perguntas rápidas sobre saúde",                           unidade: "quiz",      acao: "quiz",        botao: "Jogar" },
-  { id: "flor",        icon: "flower-outline",        titulo: "Plante sua flor",       desc: "Escolha a flor do seu jardim",                                     unidade: "flor",      acao: "jardim",      botao: "Ir" },
-  { id: "amigo",       icon: "person-add-outline",    titulo: "Traga um amigo",        desc: "Ganhe quando alguém entrar no seu grupo pelo seu código",          unidade: "amigo",     acao: "grupos",      botao: "Ir" },
-  { id: "grupo3",      icon: "people-outline",        titulo: "Grupo de 3",            desc: "Tenha um grupo com pelo menos 3 pessoas",                          unidade: "grupo",     acao: "grupos",      botao: "Ir" },
-  { id: "avaliar",     icon: "star-outline",          titulo: "Avalie o Health Plus",  desc: "Dê sua nota e conte o que achou do app",                           unidade: "avaliação", acao: "avaliar",     botao: "Avaliar" },
+  { id: "qr_renmap", tom: "verde",   icon: "qr-code-outline",       titulo: "Caça ao QR code",       desc: "Encontre o QR code no estande do RENMAP e escaneie com a câmera", unidade: "QR code",   acao: "codigo",      botao: "Validar" },
+  { id: "ativacao", tom: "amarelo",    icon: "flash-outline",         titulo: "Bora se ativar!",       desc: "Participe de uma ativação do NEXT e mostre seu código para a equipe", unidade: "ativação", acao: "equipe", botao: "Meu código" },
+  { id: "story", tom: "agua",       icon: "logo-instagram",        titulo: "Mostra pro mundo",      desc: `Poste um story marcando a @fiap e o ${INSTAGRAM}`,                  unidade: "story",     acao: "equipe",      botao: "Meu código" },
+  { id: "agua", tom: "petroleo",        icon: "water-outline",         titulo: "Hidratação no evento",  desc: "Beba 1 litro de água: 4 copos de 250 ml",                          unidade: "copos",     acao: "registrar",   botao: "+1 copo" },
+  { id: "respira", tom: "lima",     icon: "leaf-outline",          titulo: "Respira com a Bloom",   desc: "1 minuto de respiração guiada para recarregar",                    unidade: "minuto",    acao: "respira",     botao: "Começar" },
+  { id: "alongamento", tom: "verde", icon: "body-outline",          titulo: "Alongamento relâmpago", desc: "2 minutos de alongamento guiado, aí mesmo onde você está",         unidade: "sessão",    acao: "alongamento", botao: "Começar" },
+  { id: "quiz", tom: "amarelo",        icon: "bulb-outline",          titulo: "Quiz de autocuidado",   desc: "Acerte 3 perguntas rápidas sobre saúde",                           unidade: "quiz",      acao: "quiz",        botao: "Jogar" },
+  { id: "flor", tom: "menta",        icon: "flower-outline",        titulo: "Plante sua flor",       desc: "Escolha a flor do seu jardim",                                     unidade: "flor",      acao: "jardim",      botao: "Ir" },
+  { id: "amigo", tom: "agua",       icon: "person-add-outline",    titulo: "Traga um amigo",        desc: "Ganhe quando alguém entrar no seu grupo pelo seu código",          unidade: "amigo",     acao: "grupos",      botao: "Ir" },
+  { id: "grupo3", tom: "petroleo",      icon: "people-outline",        titulo: "Grupo de 3",            desc: "Tenha um grupo com pelo menos 3 pessoas",                          unidade: "grupo",     acao: "grupos",      botao: "Ir" },
+  { id: "avaliar", tom: "lima",     icon: "star-outline",          titulo: "Avalie o Health Plus",  desc: "Dê sua nota e conte o que achou do app",                           unidade: "avaliação", acao: "avaliar",     botao: "Avaliar" },
 ];
 
 const montar = (dadosBanco = {}) =>

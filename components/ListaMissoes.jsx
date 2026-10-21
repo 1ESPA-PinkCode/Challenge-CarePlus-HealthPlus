@@ -73,6 +73,7 @@ export default function ListaMissoes({ estiloItem, soPendentes = false, limite }
             gemas={m.gemas}
             feita={m.concluida}
             botao={m.botao}
+            tom={m.tom}
             onRegistrar={() => agir(m)}
           />
         </View>

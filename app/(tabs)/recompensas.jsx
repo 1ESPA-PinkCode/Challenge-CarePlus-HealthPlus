@@ -29,7 +29,7 @@ export default function Recompensas() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.titleBox}>
-        <Text style={styles.title}>Banca de doces</Text>
+        <Text style={styles.title}>Bombons</Text>
       </View>
 
       {/* saldo */}
@@ -41,8 +41,8 @@ export default function Recompensas() {
         </View>
         <Text style={styles.saldoSub}>
           {podeComprar > 0
-            ? `Dá para trocar por ${podeComprar} ${podeComprar === 1 ? "doce" : "doces"}!`
-            : `Faltam ${faltam} gemas para o seu primeiro doce`}
+            ? `Dá para trocar por ${podeComprar} ${podeComprar === 1 ? "bombom" : "bombons"}!`
+            : `Faltam ${faltam} gemas para o seu primeiro bombom`}
         </Text>
         {podeComprar === 0 && (
           <View style={{ alignSelf: "stretch", marginTop: 10 }}>
@@ -56,8 +56,8 @@ export default function Recompensas() {
         <View style={styles.comoTopo}>
           <Icone nome="storefront" tamanho={44} tom="amarelo" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.comoTitulo}>1 doce = {preco} gemas</Text>
-            <Text style={styles.comoTexto}>Vá até a banca do Health Plus e mostre o seu código. A equipe entrega o doce e desconta as gemas.</Text>
+            <Text style={styles.comoTitulo}>1 bombom = {preco} gemas</Text>
+            <Text style={styles.comoTexto}>Vá até a banca do Health Plus e mostre o seu código. A equipe entrega o bombom e desconta as gemas.</Text>
           </View>
         </View>
         <Text style={styles.codigoLabel}>Seu código</Text>
@@ -67,18 +67,18 @@ export default function Recompensas() {
       <View style={styles.premio}>
         <Icone nome="trophy" tamanho={40} tom="verde" />
         <Text style={styles.premioTexto}>
-          Comprar doces não tira você do ranking: ele conta todas as gemas que você já ganhou. O 1º lugar às 18:00 leva uma caixa de bombom!
+          Trocar gemas por bombons não tira você do ranking: ele conta todas as gemas que você já ganhou. O 1º lugar às 18:00 leva uma caixa de bombom!
         </Text>
       </View>
 
       {/* histórico */}
       {compras.length > 0 && (
         <>
-          <Text style={styles.secao}>Doces que você já pegou ({compras.length})</Text>
+          <Text style={styles.secao}>Bombons que você já pegou ({compras.length})</Text>
           {compras.map((c, i) => (
             <View key={c.codigo} style={styles.compra}>
               <Icone nome="ice-cream" tamanho={36} tom={["agua", "lima", "menta", "petroleo"][i % 4]} />
-              <Text style={styles.compraTexto}>Doce retirado</Text>
+              <Text style={styles.compraTexto}>Bombom retirado</Text>
               <Text style={styles.compraHora}>
                 {new Date(c.entregue_em || c.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
               </Text>

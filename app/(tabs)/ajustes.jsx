@@ -144,7 +144,7 @@ export default function Ajustes() {
     { icone: "lock-closed-outline", label: "Mudar Senha", onPress: () => setModalSenha(true) },
     { icone: "options-outline", label: "Preferências", onPress: () => setModalPrefs(true) },
     { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => setModalResumo(true) },
-    { icone: "gift-outline", label: "Meus doces", onPress: () => router.push("/recompensas") },
+    { icone: "gift-outline", label: "Meus bombons", onPress: () => router.push("/recompensas") },
     { icone: "logo-instagram", label: "Siga @healthplusnext", onPress: () => Linking.openURL(INSTAGRAM_URL) },
     ...(usuario?.equipe
       ? [

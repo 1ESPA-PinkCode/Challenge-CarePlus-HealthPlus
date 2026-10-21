@@ -66,7 +66,7 @@ export default function Telao() {
         {/* QR para participar */}
         <View style={[styles.painelQr, largo && { flex: 1 }]}>
           <Text style={styles.qrTitulo}>Participe!</Text>
-          <Text style={styles.qrTexto}>Escaneie, faça missões, ganhe doces e concorra a uma caixa de bombom</Text>
+          <Text style={styles.qrTexto}>Escaneie, faça missões, troque gemas por bombons e concorra a uma caixa de bombom</Text>
           <View style={styles.qrCaixa}>
             <QRCode value={site} size={largo ? 260 : 200} color={colors.primary} backgroundColor="#fff" />
           </View>

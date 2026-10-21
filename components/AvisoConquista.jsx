@@ -23,7 +23,7 @@ export default function AvisoConquista() {
           </View>
           <View style={styles.doce}>
             <Icone nome="gift" tamanho={36} tom="verde" />
-            <Text style={[styles.doceTexto, { flex: 1 }]}>Junte gemas e troque por doces na banca do Health Plus!</Text>
+            <Text style={[styles.doceTexto, { flex: 1 }]}>Junte gemas e troque por bombons na banca do Health Plus!</Text>
           </View>
           <TouchableOpacity
             style={styles.botao}

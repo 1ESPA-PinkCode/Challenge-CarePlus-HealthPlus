@@ -8,7 +8,7 @@ const GemsContext = createContext(null);
 export function GemsProvider({ children }) {
   const { perfil, recarregarPerfil } = useUsuario();
   const [compras, setCompras] = useState([]);
-  const [preco, setPreco] = useState(20);
+  const [preco, setPreco] = useState(115);
   const userId = perfil?.id;
 
   const carregarDoces = useCallback(async () => {

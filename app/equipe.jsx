@@ -41,7 +41,7 @@ export default function Equipe() {
     const { data, error } = await supabase.rpc("equipe_vender_doce", { p_codigo: pessoa?.codigo_pessoal });
     setOcupado(false);
     if (error) return setMsgPessoa(mensagemErro(error));
-    setMsgPessoa(`Doce entregue para ${pessoa?.nome}! Ficou com ${data} gemas.`);
+    setMsgPessoa(`Bombom entregue para ${pessoa?.nome}! Ficou com ${data} gemas.`);
     setPessoa((p) => (p ? { ...p, gemas: data, doces: (p.doces || 0) + 1 } : p));
     carregar();
   }
@@ -94,7 +94,7 @@ export default function Equipe() {
       <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
         {/* Dar missão (ativação / story) */}
         <Secao icone="person" tom="amarelo">Atender pessoa</Secao>
-        <Text style={styles.ajuda}>Peça o código que aparece no app da pessoa (aba de doces ou na missão).</Text>
+        <Text style={styles.ajuda}>Peça o código que aparece no app da pessoa (aba Bombons ou na missão).</Text>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -120,7 +120,7 @@ export default function Equipe() {
             <View style={styles.saldoLinha}>
               <Text style={styles.saldoTexto}>{pessoa.gemas} gemas</Text>
               <Text style={styles.saldoSub}>
-                {pessoa.doces || 0} {pessoa.doces === 1 ? "doce pego" : "doces pegos"} · 1 doce = {pessoa.preco} gemas
+                {pessoa.doces || 0} {pessoa.doces === 1 ? "bombom pego" : "bombons pegos"} · 1 bombom = {pessoa.preco} gemas
               </Text>
             </View>
             <TouchableOpacity
@@ -130,7 +130,7 @@ export default function Equipe() {
             >
               <Ionicons name="ice-cream-outline" size={18} color={colors.white} />
               <Text style={styles.botaoTexto}>
-                {pessoa.gemas < pessoa.preco ? `Faltam ${pessoa.preco - pessoa.gemas} gemas para um doce` : `Entregar doce (−${pessoa.preco} gemas)`}
+                {pessoa.gemas < pessoa.preco ? `Faltam ${pessoa.preco - pessoa.gemas} gemas para um bombom` : `Entregar bombom (−${pessoa.preco} gemas)`}
               </Text>
             </TouchableOpacity>
 
@@ -171,7 +171,7 @@ export default function Equipe() {
               {[
                 ["Participantes", resumo.participantes],
                 ["Missões feitas", resumo.missoes],
-                ["Doces entregues", resumo.doces],
+                ["Bombons entregues", resumo.doces],
                 ["Gemas em circulação", resumo.gemas_saldo],
                 ["Nota do app", resumo.nota_media ?? "–"],
               ].map(([l, v]) => (

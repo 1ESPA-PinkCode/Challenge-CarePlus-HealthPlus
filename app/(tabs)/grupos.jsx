@@ -2,12 +2,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { IconeTexto, Posicao } from "../../components/Icone";
 import ModalAddMembro from "../../components/ModalAddMembro";
 import { colors } from "../../constants/colors";
 import { useGrupos } from "../../context/GruposContext";
+import { useUsuario } from "../../context/UsuarioContext";
 
 function Avatar({ nome }) {
   const iniciais = (nome || "?")
@@ -50,13 +51,28 @@ export default function Grupos() {
   const [copiado, setCopiado] = useState(false);
   const [destaque, setDestaque] = useState(false);
 
-  // veio da missão "Traga um amigo" / "Grupo de 3"
+  const { perfil } = useUsuario();
+  const meuGrupo = grupos.find((g) => g.dono_id === meuId) || null;
+  const ehMeu = grupoAtual && grupoAtual.dono_id === meuId;
+  const criando = useRef(false);
+
+  // Abre o grupo DA PRÓPRIA pessoa. Se ela ainda não tem um, cria automaticamente.
+  async function abrirMeuGrupo() {
+    if (meuGrupo) {
+      selecionarGrupo(meuGrupo.id);
+      return;
+    }
+    if (criando.current) return;
+    criando.current = true;
+    const primeiroNome = (perfil?.nome || "").trim().split(" ")[0] || "você";
+    await criarGrupo(`Grupo de ${primeiroNome}`);
+    criando.current = false;
+  }
+
+  // veio da missão "Traga um amigo" / "Grupo de 3": vai para o grupo dela
   useEffect(() => {
     if (!convidar || !carregado) return;
-    if (grupos.length === 0) {
-      setModoModal("criar");
-      setModalVisivel(true);
-    }
+    abrirMeuGrupo();
     setDestaque(true);
   }, [convidar, carregado]);
 
@@ -151,28 +167,40 @@ export default function Grupos() {
 
             <Text style={styles.nomeGrupo}>{grupoAtual?.nome}</Text>
 
-            <View style={[styles.conviteCard, destaque && styles.conviteCardDestaque]}>
-              {destaque && (
-                <View style={styles.dicaMissao}>
-                  <Ionicons name="person-add" size={18} color={colors.white} />
-                  <Text style={styles.dicaMissaoTexto}>
-                    Missão: mande este código para seus amigos. Quando alguém entrar no seu grupo, você ganha os pontos!
-                  </Text>
+            {ehMeu ? (
+              <View style={[styles.conviteCard, destaque && styles.conviteCardDestaque]}>
+                {destaque && (
+                  <View style={styles.dicaMissao}>
+                    <Ionicons name="person-add-outline" size={18} color={colors.white} />
+                    <Text style={styles.dicaMissaoTexto}>
+                      Missão: mande este código para seus amigos. Quando alguém entrar no seu grupo, você ganha os pontos!
+                    </Text>
+                  </View>
+                )}
+                <Text style={styles.conviteLabel}>Seu código de convite</Text>
+                <Text style={styles.conviteCodigo}>{grupoAtual?.codigo}</Text>
+                <View style={styles.conviteBotoes}>
+                  <TouchableOpacity style={styles.conviteBotao} onPress={copiarConvite} activeOpacity={0.8}>
+                    <Ionicons name={copiado ? "checkmark" : "copy-outline"} size={18} color={colors.primary} />
+                    <Text style={styles.conviteBotaoTexto}>{copiado ? "Copiado!" : "Copiar"}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.conviteBotao, styles.conviteBotaoCheio]} onPress={compartilhar} activeOpacity={0.8}>
+                    <Ionicons name="share-social-outline" size={18} color={colors.white} />
+                    <Text style={[styles.conviteBotaoTexto, { color: colors.white }]}>Compartilhar</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-              <Text style={styles.conviteLabel}>Seu código de convite</Text>
-              <Text style={styles.conviteCodigo}>{grupoAtual?.codigo}</Text>
-              <View style={styles.conviteBotoes}>
-                <TouchableOpacity style={styles.conviteBotao} onPress={copiarConvite} activeOpacity={0.8}>
-                  <Ionicons name={copiado ? "checkmark" : "copy-outline"} size={18} color={colors.primary} />
-                  <Text style={styles.conviteBotaoTexto}>{copiado ? "Copiado!" : "Copiar"}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.conviteBotao, styles.conviteBotaoCheio]} onPress={compartilhar} activeOpacity={0.8}>
-                  <Ionicons name="share-social" size={18} color={colors.white} />
-                  <Text style={[styles.conviteBotaoTexto, { color: colors.white }]}>Compartilhar</Text>
+              </View>
+            ) : (
+              <View style={styles.conviteCard}>
+                <Text style={[styles.conviteLabel, { textAlign: "center" }]}>
+                  Você participa deste grupo, mas ele é de outra pessoa. Para ganhar pontos convidando amigos, use o seu próprio grupo.
+                </Text>
+                <TouchableOpacity style={[styles.botaoCriar, { marginTop: 12 }]} onPress={abrirMeuGrupo} activeOpacity={0.85}>
+                  <Ionicons name="person-add-outline" size={20} color={colors.white} />
+                  <Text style={styles.botaoCriarTexto}>{meuGrupo ? "Ir para o meu grupo" : "Criar meu grupo"}</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            )}
 
             <Text style={styles.secaoLabel}>Missões concluídas</Text>
             <View style={styles.card}>
@@ -203,7 +231,7 @@ export default function Grupos() {
                 />
               ))}
             </View>
-            {membros.length === 1 && (
+            {ehMeu && membros.length === 1 && (
               <Text style={styles.dica}>Compartilhe o código acima para seus amigos entrarem no grupo.</Text>
             )}
           </>

@@ -1,7 +1,7 @@
 // app/(tabs)/index.jsx
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import BarraProgresso from "../../components/BarraProgresso";
 import FlorVisual from "../../components/FlorVisual";
 import Greeting from "../../components/Greeting";
@@ -10,7 +10,7 @@ import TituloSecao from "../../components/TituloSecao";
 import { FLORES } from "../../components/blooms";
 import { colors } from "../../constants/colors";
 import { useJardim } from "../../context/JardimContext";
-import { useMissoes } from "../../context/MissoesContext";
+import { INSTAGRAM_URL, useMissoes } from "../../context/MissoesContext";
 import { useUsuario } from "../../context/UsuarioContext";
 import { useGemas } from "../../contexts/GemsContext";
 import Icone from "../../components/Icone";
@@ -116,11 +116,20 @@ export default function Inicio() {
           <Text style={styles.gincanaSub}>Contar passos</Text>
         </TouchableOpacity>
       </View>
+      <TouchableOpacity style={styles.insta} onPress={() => Linking.openURL(INSTAGRAM_URL)} activeOpacity={0.85}>
+        <Icone nome="logo-instagram" tamanho={44} tom="agua" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.jardimTitulo}>Siga @healthplusnext</Text>
+          <Text style={styles.jardimSub}>Acompanhe o Health Plus no Instagram</Text>
+        </View>
+        <Ionicons name="open-outline" size={20} color={colors.primary} />
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  insta: { flexDirection: "row", alignItems: "center", gap: 14, marginHorizontal: 16, marginTop: 18, padding: 14, borderRadius: 20, borderWidth: 1.5, borderColor: colors.green3, backgroundColor: colors.white },
   gincana: { flexDirection: "row", gap: 12, marginHorizontal: 16 },
   gincanaCard: { flex: 1, backgroundColor: "#EAF3DC", borderRadius: 20, padding: 16, alignItems: "center" },
   gincanaEmoji: { fontSize: 34 },

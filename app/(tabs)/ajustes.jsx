@@ -16,6 +16,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import { Linking } from "react-native";
+import { INSTAGRAM_URL } from "../../context/MissoesContext";
 import { useUsuario } from "../../context/UsuarioContext";
 import { colors } from "../../constants/colors";
 
@@ -143,6 +145,7 @@ export default function Ajustes() {
     { icone: "options-outline", label: "Preferências", onPress: () => setModalPrefs(true) },
     { icone: "bar-chart-outline", label: "Resumo diário", onPress: () => setModalResumo(true) },
     { icone: "gift-outline", label: "Meus doces", onPress: () => router.push("/recompensas") },
+    { icone: "logo-instagram", label: "Siga @healthplusnext", onPress: () => Linking.openURL(INSTAGRAM_URL) },
     ...(usuario?.equipe
       ? [
           { icone: "shield-checkmark-outline", label: "Painel da equipe", onPress: () => router.push("/equipe") },

@@ -11,6 +11,9 @@ export default function Root({ children }) {
         <title>Health Plus</title>
         <meta name="description" content="Autocuidado gamificado: cumpra missões saudáveis e faça seu jardim florescer." />
         <meta name="theme-color" content="#1C9770" />
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light" />
+        <meta name="darkreader-lock" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,7 +21,7 @@ export default function Root({ children }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Health Plus" />
         <ScrollViewStyleReset />
-        <style dangerouslySetInnerHTML={{ __html: "html,body{background:#1C9770;overscroll-behavior:none}#root{background:#fff}" }} />
+        <style dangerouslySetInnerHTML={{ __html: ":root{color-scheme:light only}html,body{background:#1C9770;overscroll-behavior:none;forced-color-adjust:none}#root{background:#fff}svg{forced-color-adjust:none}" }} />
       </head>
       <body>{children}</body>
     </html>

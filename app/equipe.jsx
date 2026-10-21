@@ -109,7 +109,7 @@ export default function Equipe() {
     <TelaAtividade titulo="Equipe">
       <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }} contentContainerStyle={{ width: "100%" }}>
         {/* Dar missão (ativação / story) */}
-        <Secao icone="star" tom="amarelo">Confirmar ativação ou story</Secao>
+        <Secao icone="star" tom="amarelo">Confirmar medGrip ou story</Secao>
         <View style={styles.linhaBusca}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
@@ -131,7 +131,7 @@ export default function Equipe() {
           <View style={styles.card}>
             <Text style={styles.doceNome}>{pessoa.nome}</Text>
             {[
-              ["ativacao", "Participou da ativação", "flash"],
+              ["ativacao", "Participou do medGrip", "flash"],
               ["story", "Postou o story", "logo-instagram"],
             ].map(([id, label, ic]) =>
               pessoa[id] ? (

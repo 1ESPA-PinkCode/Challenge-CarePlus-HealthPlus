@@ -1,4 +1,5 @@
 // components/CenaJardim.jsx
+import { useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import Svg, { Rect, Circle, Ellipse, Path, G, Defs, ClipPath } from "react-native-svg";
 
@@ -10,16 +11,17 @@ import Svg, { Rect, Circle, Ellipse, Path, G, Defs, ClipPath } from "react-nativ
  * - width, height: tamanho da cena (default 340 x 180)
  */
 export default function CenaJardim({ width = 340, height = 180 }) {
+  const clip = useRef(`card${Math.random().toString(36).slice(2, 8)}`).current;
   return (
     <View style={[styles.wrapper, { width, height }]}>
       <Svg width="100%" height="100%" viewBox="0 0 380 200">
         <Defs>
-          <ClipPath id="card">
+          <ClipPath id={clip}>
             <Rect x={2} y={2} width={376} height={196} rx={18} />
           </ClipPath>
         </Defs>
 
-        <G clipPath="url(#card)">
+        <G clipPath={`url(#${clip})`}>
           {/* céu */}
           <Rect x={0} y={0} width={380} height={200} fill="#FBFBF6" />
 

@@ -14,14 +14,16 @@ import {
   View,
 } from "react-native";
 import { colors } from "../constants/colors";
-import { INSTAGRAM, useMissoes } from "../context/MissoesContext";
+import { INSTAGRAM, INSTAGRAM_URL, useMissoes } from "../context/MissoesContext";
+import { Linking } from "react-native";
 import { useUsuario } from "../context/UsuarioContext";
 import MissaoCard from "./MissaoCard";
 import Icone from "./Icone";
 
 const AJUDA_EQUIPE = {
-  ativacao: "Participe de uma ativação do NEXT e mostre este código para alguém da equipe Health Plus. A missão aparece concluída na hora.",
-  story: `Poste um story marcando a @fiap e o ${INSTAGRAM}. Mostre o story e este código no estande do Health Plus.`,
+  ativacao:
+    "1. Vá até o estande do medGrip, nossa iniciação científica aqui no NEXT.\n2. Participe da ativação com a nossa equipe.\n3. No final, mostre o código abaixo para alguém da equipe. Assim que confirmarem, a missão é concluída na hora.",
+  story: `1. Poste um story marcando a @fiap e o ${INSTAGRAM}.\n2. Mostre o story e o código abaixo no estande do Health Plus.`,
 };
 
 const AJUDA_CODIGO = {
@@ -176,6 +178,12 @@ function ModalCodigoPessoal({ missao, codigo, onFechar, recarregar }) {
       ) : (
         <>
           <Text style={styles.texto}>{missao ? AJUDA_EQUIPE[missao.id] : ""}</Text>
+          {missao?.id === "story" && (
+            <TouchableOpacity style={styles.botaoInsta} onPress={() => Linking.openURL(INSTAGRAM_URL)} activeOpacity={0.85}>
+              <Ionicons name="logo-instagram" size={20} color={colors.primary} />
+              <Text style={styles.botaoInstaTexto}>Abrir {INSTAGRAM} no Instagram</Text>
+            </TouchableOpacity>
+          )}
           <Text style={styles.label}>Seu código</Text>
           <Text style={styles.codigoPessoal}>#{codigo || "----"}</Text>
           <Text style={styles.aguardando}>Esperando a confirmação da equipe…</Text>
@@ -251,6 +259,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   label: { textAlign: "center", color: "#8A8A8A", fontWeight: "700" },
+  botaoInsta: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 2, borderColor: colors.primary, borderRadius: 14, paddingVertical: 11, marginBottom: 14 },
+  botaoInstaTexto: { color: colors.primary, fontWeight: "800", fontSize: 15 },
   codigoPessoal: { textAlign: "center", fontSize: 54, fontWeight: "900", color: colors.primary, letterSpacing: 6, marginVertical: 6 },
   aguardando: { textAlign: "center", color: "#8A8A8A", fontSize: 13, marginBottom: 14 },
   estrelas: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 14 },

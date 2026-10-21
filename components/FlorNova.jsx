@@ -33,7 +33,6 @@ const PETALA_FINA = "M0,0 C-5,-6 -7,-32 0,-44 C7,-32 5,-6 0,0 Z";
 const FOLHA = "M0,0 C10,-14 34,-18 52,-6 C34,4 12,6 0,0 Z";
 
 // cor da pontinha que aparece no botão antes de abrir
-const PONTA_BOTAO = { girassol: "#FFC93B", margarida: "#FFFFFF", tulipa: "#F27BA8", rosa: "#E23C5A" };
 
 /* ---------------- cabeças das flores ---------------- */
 // cada função desenha a flor aberta centrada em (0,0); `abre` vai de 0 a 1
@@ -136,6 +135,49 @@ function cabecaRosa(abre, t, u) {
       <Circle r={10} fill={`url(#${u}rCentro)`} />
       <Path d="M-5,1 C-6,-6 4,-8 5,-2 C6,3 -1,5 -2,0 C-2,-3 2,-3 2,-1" stroke="#7A0A20" strokeWidth={1.3} fill="none" opacity={0.7} />
       <Ellipse cx={-6} cy={-8} rx={6} ry={3} fill="#fff" opacity={0.15} />
+    </G>
+  );
+}
+
+/* ---------------- botão (antes de abrir) ---------------- */
+// cresce = 0..1 (botão se formando), abrindo = 0..1 (sépalas se afastam e as pétalas aparecem)
+const COR_BOTAO = { girassol: "gPetala", margarida: "mPetala", tulipa: "tPetala", rosa: "rFora" };
+const PETALA_BOTAO = "M0,0 C-15,-5 -17,-30 0,-50 C17,-30 15,-5 0,0Z";
+
+function desenharBotao(tipo, cresce, abrindo, u) {
+  const s = (0.5 + 0.5 * cresce) * (1.5 + 0.4 * abrindo);
+  const cor = `url(#${u}${COR_BOTAO[tipo] || "gPetala"})`;
+  const contorno = tipo === "margarida" ? "#D5DDE3" : "none";
+  const mostraCor = Math.max(0, (cresce - 0.35) / 0.65); // a cor aparece aos poucos
+  const giro = 6 + 26 * abrindo; // pétalas laterais se abrindo
+  const sepala = 18 + 40 * abrindo; // sépalas descendo
+  return (
+    <G transform={`translate(0 -4) scale(${s})`}>
+      {/* sépalas verdes */}
+      {[-1, 1].map((lado) => (
+        <G key={`se${lado}`} transform={`rotate(${lado * sepala})`}>
+          <Path d="M0,0 C-7,-6 -8,-24 0,-36 C8,-24 7,-6 0,0Z" fill="#5C9E35" />
+          <Path d="M0,-3 L0,-30" stroke="#3F7A2A" strokeWidth={1} opacity={0.6} />
+        </G>
+      ))}
+      {/* pétalas */}
+      <G opacity={mostraCor} transform={`scale(${0.75 + 0.25 * mostraCor})`}>
+        <G transform={`rotate(${-giro})`}>
+          <Path d={PETALA_BOTAO} fill={cor} stroke={contorno} strokeWidth={0.8} />
+        </G>
+        <G transform={`rotate(${giro})`}>
+          <Path d={PETALA_BOTAO} fill={cor} stroke={contorno} strokeWidth={0.8} />
+        </G>
+        <Path d={PETALA_BOTAO} fill={cor} stroke={contorno} strokeWidth={0.8} />
+        <Path d="M0,-6 C-2,-20 -2,-34 0,-44" stroke="#FFFFFF" strokeWidth={1.6} opacity={0.4} fill="none" />
+      </G>
+      {/* cálice verde que envolve a base */}
+      <Path
+        d={`M-14,-2 C-14,-${18 - 10 * abrindo} -6,-${30 - 14 * abrindo} 0,-${34 - 16 * abrindo} C6,-${30 - 14 * abrindo} 14,-${18 - 10 * abrindo} 14,-2 C8,4 -8,4 -14,-2Z`}
+        fill={`url(#${u}botao)`}
+        opacity={1 - 0.15 * mostraCor}
+      />
+      <Path d="M-8,-4 C-6,-14 -3,-20 0,-24" stroke="#9BD45E" strokeWidth={1.6} opacity={0.5} fill="none" />
     </G>
   );
 }
@@ -364,14 +406,9 @@ export default function FlorNova({
 
           {botao > 0 && (
             <G transform={`translate(${BX} ${topoY}) rotate(${cabeca})`}>
-              {abre < 1 && (
-                <G opacity={1 - abre} transform={`scale(${(0.4 + botao * 0.6) * 1.3})`}>
-                  <Ellipse cx={0} cy={-14} rx={16} ry={20} fill={`url(#${u}botao)`} />
-                  <Path d="M-14,-8 C-10,-26 -4,-34 0,-36 C4,-34 10,-26 14,-8" fill="#6FAE40" opacity={0.7} />
-                  {botao > 0.7 && <Path d="M-5,-30 C-3,-38 3,-38 5,-30" fill={PONTA_BOTAO[tipo] || "#FFC93B"} />}
-                </G>
-              )}
-              {abre > 0 && desenharCabeca(abre, t, u)}
+              {/* 1ª metade da abertura: o botão se abre; 2ª metade: a flor desabrocha */}
+              {abre < 0.5 && desenharBotao(tipo, botao, abre / 0.5, u)}
+              {abre >= 0.5 && desenharCabeca(0.45 + 0.55 * ((abre - 0.5) / 0.5), t, u)}
             </G>
           )}
         </G>

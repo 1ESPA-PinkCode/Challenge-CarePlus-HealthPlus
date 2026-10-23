@@ -10,3 +10,4 @@ self.addEventListener("notificationclick", (e) => {
     })
   );
 });
+self.addEventListener("fetch", () => {});

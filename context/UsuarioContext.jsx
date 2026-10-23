@@ -71,7 +71,12 @@ export function UsuarioProvider({ children }) {
   }
 
   async function logout() {
-    await supabase.auth.signOut();
+    try {
+      // "local": sai neste aparelho mesmo se a internet falhar
+      await supabase.auth.signOut({ scope: "local" });
+    } catch (e) {
+      console.log("Erro ao sair:", e?.message);
+    }
     setPerfil(null);
     setSessao(null);
   }

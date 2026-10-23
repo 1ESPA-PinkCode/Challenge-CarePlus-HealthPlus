@@ -12,6 +12,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -57,7 +58,8 @@ export default function Ajustes() {
   async function escolherFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissao.granted) {
-      Alert.alert("Permissão necessária", "Precisamos acessar sua galeria para trocar a foto.");
+      if (Platform.OS === "web") window.alert("Precisamos acessar sua galeria para trocar a foto.");
+      else Alert.alert("Permissão necessária", "Precisamos acessar sua galeria para trocar a foto.");
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
@@ -121,23 +123,23 @@ export default function Ajustes() {
     }
   }
 
-  async function handleLogout() {
-    Alert.alert(
-      "Sair da conta",
-      "Tem certeza que deseja sair?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Sair",
-          style: "destructive",
-          onPress: async () => {
-            await logout();
-            router.replace("/auth/login");
-          },
-        },
-      ]
-    );
+  async function sair() {
+    await logout();
+    router.replace("/auth/login");
   }
+
+  function handleLogout() {
+    // no navegador o Alert do React Native não aparece; usa a confirmação do próprio navegador
+    if (Platform.OS === "web") {
+      if (typeof window === "undefined" || window.confirm("Tem certeza que deseja sair da conta?")) sair();
+      return;
+    }
+    Alert.alert("Sair da conta", "Tem certeza que deseja sair?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Sair", style: "destructive", onPress: sair },
+    ]);
+  }
+
 
   const itensMenu = [
     { icone: "create-outline", label: "Editar Perfil", onPress: () => setModalPerfil(true) },

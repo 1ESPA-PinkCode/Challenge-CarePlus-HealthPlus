@@ -46,7 +46,7 @@ export default function Ranking() {
 
       <View style={styles.premio}>
         <Icone nome="gift" tamanho={40} tom="branco" />
-        <Text style={[styles.premioTexto, { flex: 1 }]}>Quem terminar em 1º às 18:00 ganha uma caixa de bombom! Empate: vence quem andou mais.</Text>
+        <Text style={[styles.premioTexto, { flex: 1 }]}>Quem terminar em 1º às 17:45 ganha uma caixa de bombom! Empate: vence quem andou mais.</Text>
       </View>
 
       <TouchableOpacity style={styles.passosBtn} onPress={() => router.push("/passos")} activeOpacity={0.85}>

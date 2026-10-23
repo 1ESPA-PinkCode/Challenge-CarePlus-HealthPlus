@@ -67,7 +67,7 @@ export default function Recompensas() {
       <View style={styles.premio}>
         <Icone nome="trophy" tamanho={40} tom="verde" />
         <Text style={styles.premioTexto}>
-          Trocar gemas por bombons não tira você do ranking: ele conta todas as gemas que você já ganhou. O 1º lugar às 18:00 leva uma caixa de bombom!
+          Trocar gemas por bombons não tira você do ranking: ele conta todas as gemas que você já ganhou. O 1º lugar às 17:45 leva uma caixa de bombom!
         </Text>
       </View>
 
